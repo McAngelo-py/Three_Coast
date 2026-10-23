@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Three Coast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/jpeg" href="images/logo.jpg">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<div class="loading-screen" id="loading-screen" role="status" aria-live="polite" aria-label="Loading Three Coast">
+  <span>Three Coast</span>
+  <div class="loading-bar" aria-hidden="true"><i></i></div>
+</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="tee" viewBox="0 0 100 100"><path d="M34 12 L10 26 L20 44 L28 40 L28 88 L72 88 L72 40 L80 44 L90 26 L66 12 Q50 24 34 12Z"/></symbol>
+<symbol id="hood" viewBox="0 0 100 100"><path d="M36 10 Q50 22 64 10 L86 24 L92 70 L78 72 L76 90 L24 90 L22 72 L8 70 L14 24Z"/><path d="M36 10 Q50 36 64 10 M40 60 L60 60 L62 76 L38 76Z" fill="none"/></symbol>
+<symbol id="cap" viewBox="0 0 100 100"><path d="M18 62 Q18 28 52 28 Q82 28 82 62Z"/><path d="M60 62 Q96 60 96 70 Q80 76 56 70Z"/></symbol>
+<symbol id="pants" viewBox="0 0 100 100"><path d="M28 8 L72 8 L78 92 L56 92 L50 36 L44 92 L22 92Z"/></symbol>
+</svg>
+
+<nav>
+<a class="logo" href="#top" aria-label="Three Coast home">
+  <img src="images/logo.jpg" alt="Three Coast logo">
+  <span></span>
+</a>
+<ul><li><a href="#shop">Shop</a></li><li><a href="#coasts">Coasts</a></li><li><a href="#about">Story</a></li><li><a href="#drop">Drop</a></li></ul>
+</nav>
+
+<header class="hero" id="top">
+  <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-label="Background video">
+    <source src="images/FDownloader.Net_AQMVY8g3gI9thoL2plCdpnddJfBXyZOCQS_wg3IdMyhtXu86rRjINoel1GSUqP8zOUSG6U-ljGI0Ao9khLAnGCMpBh-PL7CtT_M_720p_(HD).mp4" type="video/mp4">
+  </video>
+  <div class="hero-content">
+    <h1><span>Three</span><span class="l2">Coast</span></h1>
+    <p>Heavyweight streetwear built for the block, the boardwalk and the bayou. Season 01 is live.</p>
+    <a class="cta" href="#shop">Shop Season 01</a>
+  </div>
+  <div class="bands" aria-hidden="true"><i></i><i></i><i></i></div>
+</header>
+
+<div class="marquee" aria-hidden="true"><div>
+<span>Season 01</span><span>Limited runs</span><span>Heavyweight cotton</span><span>No restocks</span><span>Pacific / Atlantic / Gulf</span><span>Season 01</span><span>Limited runs</span><span>Heavyweight cotton</span><span>No restocks</span><span>Pacific / Atlantic / Gulf</span>
+<span>Season 01</span><span>Limited runs</span><span>Heavyweight cotton</span><span>No restocks</span><span>Pacific / Atlantic / Gulf</span><span>Season 01</span><span>Limited runs</span><span>Heavyweight cotton</span><span>No restocks</span><span>Pacific / Atlantic / Gulf</span>
+</div></div>
+
+<section id="shop">
+<div class="head">
+<h2>Season 01</h2>
+<div class="filters" role="group" aria-label="Filter by coast">
+<button aria-pressed="true" data-f="all">All</button>
+<button aria-pressed="false" data-f="pac">Pacific</button>
+<button aria-pressed="false" data-f="atl">Atlantic</button>
+<button aria-pressed="false" data-f="gulf">Gulf</button>
+</div>
+</div>
+<div class="grid">
+<article class="card" data-c="pac"><div class="art pac"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Tide Line Tee</h3><small>Pacific · Boxy fit</small></div><span class="price">$48</span></div></article>
+<article class="card" data-c="atl"><div class="art atl"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Subway Hoodie</h3><small>Atlantic · 480gsm</small></div><span class="price">$95</span></div></article>
+<article class="card" data-c="gulf"><div class="art gulf"><svg><use href="#cap"/></svg></div><div class="info"><div><h3>Bayou Cap</h3><small>Gulf · Washed twill</small></div><span class="price">$38</span></div></article>
+<article class="card" data-c="atl"><div class="art atl"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Late Train Tee</h3><small>Atlantic · Oversized</small></div><span class="price">$48</span></div></article>
+<article class="card" data-c="pac"><div class="art pac"><svg><use href="#pants"/></svg></div><div class="info"><div><h3>Pier Cargo Pant</h3><small>Pacific · Wide leg</small></div><span class="price">$110</span></div></article>
+<article class="card" data-c="gulf"><div class="art gulf"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Humidity Hoodie</h3><small>Gulf · Cropped</small></div><span class="price">$95</span></div></article>
+</div>
+</section>
+
+<section class="first-drop" aria-labelledby="first-drop-title">
+  <h2 id="first-drop-title">First Drop 2K26</h2>
+  <p>Available Now!!</p>
+</section>
+
+<section class="coasts" id="coasts" aria-label="First Drop collection">
+  <div class="coast pac" tabindex="0" style="--coast-image: url('images/downloadgram.org_625749467_17880359883460731_6327762775578840417_n.jpg')">
+    <div class="coast-body">
+      <div>
+        <h2>Wear the tide.</h2>
+        <p>Made for wherever the day takes you.</p>
+      </div>
+      <button class="coast-product" type="button" data-title="Tide Line Tee" data-image="images/downloadgram.org_625749467_17880359883460731_6327762775578840417_n.jpg" data-alt="Pacific tide line tee">
+        <img src="images/downloadgram.org_625749467_17880359883460731_6327762775578840417_n.jpg" alt="Pacific tide line tee">
+        <span>Tide Line Tee</span>
+      </button>
+    </div>
+  </div>
+  <div class="coast atl" tabindex="0" style="--coast-image: url('images/downloadgram.org_627142527_17880359901460731_4979456962535940000_n.jpg')">
+    <div class="coast-body">
+      <div>
+        <h2>Make some noise.</h2>
+        <p>For the ones who never blend in.</p>
+      </div>
+      <button class="coast-product" type="button" data-title="Subway Tee" data-image="images/downloadgram.org_627142527_17880359901460731_4979456962535940000_n.jpg" data-alt="Atlantic street tee">
+        <img src="images/downloadgram.org_627142527_17880359901460731_4979456962535940000_n.jpg" alt="Atlantic street tee">
+        <span>Subway Tee</span>
+      </button>
+    </div>
+  </div>
+  <div class="coast gulf" tabindex="0" style="--coast-image: url('images/downloadgram.org_627298203_17880359904460731_2805433561778415820_n.jpg')">
+    <div class="coast-body">
+      <div>
+        <h2>Stay in the heat.</h2>
+        <p>Keep your cool. Bring the fire.</p>
+      </div>
+      <button class="coast-product" type="button" data-title="Three Coast Tee" data-image="images/downloadgram.org_627298203_17880359904460731_2805433561778415820_n.jpg" data-alt="Gulf three coast tee">
+        <img src="images/downloadgram.org_627298203_17880359904460731_2805433561778415820_n.jpg" alt="Gulf three coast tee">
+        <span>Three Coast Tee</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+<h2>One crew.<br><em>Three</em> shorelines.</h2>
+<p>Three Coast started with a simple idea: the best street style doesn’t belong to one city. We cut every piece in small runs, pull the color from where it’s from, and never restock a drop. If you missed it, you missed it.</p>
+</section>
+
+<section class="drop" id="drop">
+<h2>Don’t miss Drop 02</h2>
+<p>Get the date and early access a day before everyone else.</p>
+<form id="f">
+<input type="email" required placeholder="Your email" aria-label="Email address">
+<button type="submit">Get early access</button>
+</form>
+<div class="ok" id="ok" role="status"></div>
+</section>
+
+<footer>
+<div><b>Three Coast</b><div>Pacific / Atlantic / Gulf</div></div>
+<div class="footer-links"><a href="https://www.instagram.com/three_coast/">Instagram</a><a href="https://www.facebook.com/profile.php?id=100091943941290">Facebook</a><a href="#">Contact</a><a class="back-to-top" href="#top" aria-label="Back to top">Back to top ↑</a></div>
+</footer>
+
+<dialog class="shirt-modal" id="shirt-modal" aria-labelledby="shirt-modal-title">
+  <button class="shirt-modal-close" type="button" aria-label="Close shirt view">×</button>
+  <img class="shirt-modal-image" id="shirt-modal-image" src="" alt="">
+  <h2 id="shirt-modal-title"></h2>
+</dialog>
+
+<script src="script.js"></script>
+</body>
+</html>
