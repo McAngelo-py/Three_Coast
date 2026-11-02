@@ -62,6 +62,73 @@ var shirtModal = document.getElementById('shirt-modal');
 var shirtModalImage = document.getElementById('shirt-modal-image');
 var shirtModalTitle = document.getElementById('shirt-modal-title');
 
+var productGrid = document.querySelector('#shop .grid');
+var productModal = document.getElementById('product-modal');
+var productModalArt = document.getElementById('product-modal-art');
+var productModalTitle = document.getElementById('product-modal-title');
+var productModalCategory = document.getElementById('product-modal-category');
+var productModalDescription = document.getElementById('product-modal-description');
+var productModalPrice = document.getElementById('product-modal-price');
+var productModalStock = document.getElementById('product-modal-stock');
+
+function openProductModal(card) {
+  var title = card.querySelector('h3');
+  var description = card.querySelector('.product-description');
+  var image = card.querySelector('.product-image');
+  var artwork = card.querySelector('.art');
+  var stock = card.querySelector('.stock-state');
+
+  productModalArt.replaceChildren();
+  if (image) {
+    var enlargedImage = document.createElement('img');
+    enlargedImage.className = 'product-modal-image';
+    enlargedImage.src = image.src;
+    enlargedImage.alt = image.alt || (title && title.textContent) || 'Product image';
+    productModalArt.appendChild(enlargedImage);
+  } else if (artwork) {
+    var illustration = artwork.querySelector('svg');
+    if (illustration) {
+      productModalArt.appendChild(illustration.cloneNode(true));
+    }
+  }
+
+  productModalTitle.textContent = title ? title.textContent : '';
+  productModalCategory.textContent = productCategoryLabel(card.dataset.category || '');
+  productModalDescription.textContent = description
+    ? description.textContent.replace(/^[^·]+·\s*/, '')
+    : '';
+  var price = card.querySelector('.price');
+  productModalPrice.textContent = price ? price.textContent : '';
+  productModalStock.textContent = stock && !stock.hidden ? stock.textContent : '';
+  productModalStock.hidden = !productModalStock.textContent;
+  productModal.showModal();
+}
+
+productGrid.addEventListener('click', function (event) {
+  var card = event.target.closest('.card[data-product-id]');
+  if (card) {
+    openProductModal(card);
+  }
+});
+
+productGrid.addEventListener('keydown', function (event) {
+  var card = event.target.closest('.card[data-product-id]');
+  if (card && (event.key === 'Enter' || event.key === ' ')) {
+    event.preventDefault();
+    openProductModal(card);
+  }
+});
+
+document.querySelector('[data-close-product-modal]').addEventListener('click', function () {
+  productModal.close();
+});
+
+productModal.addEventListener('click', function (event) {
+  if (event.target === productModal) {
+    productModal.close();
+  }
+});
+
 document.querySelectorAll('.coast-product').forEach(function (product) {
   product.addEventListener('click', function () {
     shirtModalImage.src = product.dataset.image;
@@ -169,6 +236,13 @@ if (window.location.protocol !== 'file:') {
         if (existingCard) {
           existingCard.dataset.category = product.category;
           existingCard.dataset.active = String(product.is_active !== false);
+          existingCard.setAttribute(
+            'aria-label',
+            (product.name || 'Product') + ', ' + productCategoryLabel(product.category) +
+              '. View product details.'
+          );
+          existingCard.tabIndex = 0;
+          existingCard.setAttribute('role', 'button');
           existingCard.hidden = product.is_active === false;
           var productTitle = existingCard.querySelector('h3');
           var productDescription = existingCard.querySelector('.product-description');
@@ -214,6 +288,13 @@ if (window.location.protocol !== 'file:') {
         card.dataset.category = product.category;
         card.dataset.productId = product.id;
         card.dataset.active = 'true';
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.setAttribute(
+          'aria-label',
+          (product.name || 'Product') + ', ' + productCategoryLabel(product.category) +
+            '. View product details.'
+        );
 
         var artwork = document.createElement('div');
         artwork.className = 'art';

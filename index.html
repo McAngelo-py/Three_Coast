@@ -60,12 +60,12 @@
 </div>
 </div>
 <div class="grid">
-<article class="card" data-category="t-shirts" data-product-id="seed-tide-line"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Tide Line Tee</h3><small class="product-description">T-shirts · Boxy fit</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
-<article class="card" data-category="hoodies" data-product-id="seed-subway-hoodie"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Subway Hoodie</h3><small class="product-description">Hoodies · 480gsm</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
-<article class="card" data-category="headwear" data-product-id="seed-bayou-cap"><div class="art"><svg><use href="#cap"/></svg></div><div class="info"><div><h3>Bayou Cap</h3><small class="product-description">Headwear · Washed twill</small><small class="stock-state" hidden></small></div><span class="price">$38</span></div></article>
-<article class="card" data-category="t-shirts" data-product-id="seed-late-train"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Late Train Tee</h3><small class="product-description">T-shirts · Oversized</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
-<article class="card" data-category="pants" data-product-id="seed-pier-cargo"><div class="art"><svg><use href="#pants"/></svg></div><div class="info"><div><h3>Pier Cargo Pant</h3><small class="product-description">Pants · Wide leg</small><small class="stock-state" hidden></small></div><span class="price">$110</span></div></article>
-<article class="card" data-category="hoodies" data-product-id="seed-humidity-hoodie"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Humidity Hoodie</h3><small class="product-description">Hoodies · Cropped</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
+<article class="card" data-category="t-shirts" data-product-id="seed-tide-line" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Tide Line Tee</h3><small class="product-description">T-shirts · Boxy fit</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
+<article class="card" data-category="hoodies" data-product-id="seed-subway-hoodie" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Subway Hoodie</h3><small class="product-description">Hoodies · 480gsm</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
+<article class="card" data-category="headwear" data-product-id="seed-bayou-cap" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#cap"/></svg></div><div class="info"><div><h3>Bayou Cap</h3><small class="product-description">Headwear · Washed twill</small><small class="stock-state" hidden></small></div><span class="price">$38</span></div></article>
+<article class="card" data-category="t-shirts" data-product-id="seed-late-train" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Late Train Tee</h3><small class="product-description">T-shirts · Oversized</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
+<article class="card" data-category="pants" data-product-id="seed-pier-cargo" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#pants"/></svg></div><div class="info"><div><h3>Pier Cargo Pant</h3><small class="product-description">Pants · Wide leg</small><small class="stock-state" hidden></small></div><span class="price">$110</span></div></article>
+<article class="card" data-category="hoodies" data-product-id="seed-humidity-hoodie" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Humidity Hoodie</h3><small class="product-description">Hoodies · Cropped</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
 </div>
 <p class="category-empty-state" id="category-empty-state" role="status" hidden></p>
 </section>
@@ -143,6 +143,20 @@
   <button class="shirt-modal-close" type="button" aria-label="Close shirt view">×</button>
   <img class="shirt-modal-image" id="shirt-modal-image" src="" alt="">
   <h2 id="shirt-modal-title"></h2>
+</dialog>
+
+<dialog class="product-modal" id="product-modal" aria-labelledby="product-modal-title">
+  <button class="shirt-modal-close" type="button" data-close-product-modal aria-label="Close product details">×</button>
+  <div class="product-modal-art" id="product-modal-art"></div>
+  <div class="product-modal-copy">
+    <p class="product-modal-category" id="product-modal-category"></p>
+    <h2 id="product-modal-title"></h2>
+    <p class="product-modal-description" id="product-modal-description"></p>
+    <div class="product-modal-meta">
+      <strong id="product-modal-price"></strong>
+      <span id="product-modal-stock"></span>
+    </div>
+  </div>
 </dialog>
 
 <script src="script.js"></script>
