@@ -795,7 +795,7 @@ uploadForm.addEventListener('submit', async function (event) {
   setStatus('Preparing secure upload…', false);
   try {
     await uploadContentImage(file, slotSelect.value);
-    await requestJson('/api/admin/activity', {
+    await requestJson('/api/admin/dashboard', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ slot: slotSelect.value })
