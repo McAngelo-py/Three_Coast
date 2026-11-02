@@ -47,6 +47,7 @@ Products and posts are stored in Neon Postgres. Products use T-shirts, Hoodies, 
 5. Redeploy after adding the variables, then open `https://your-domain/admin.html`.
 
 The upload API signs requests on the server and requires the admin password; Cloudinary secrets are never sent to the browser. Site image uploads overwrite fixed Cloudinary public IDs and request CDN invalidation; product/post images receive unique IDs. Uploads accept JPG, PNG, WebP, or AVIF images up to 10 MB.
+The images API lists existing fixed site-image assets before returning their URLs. Until a site image is uploaded from the admin page, the storefront and admin preview use the bundled local image instead of requesting a missing Cloudinary asset.
 
 Product stock is managed manually and shown on the storefront; this does not add checkout or automatically decrement stock. Published posts are shown on the storefront; drafts are admin-only. For local development with serverless API routes, use the Vercel CLI (`vercel dev`) and set the same environment variables locally.
 
