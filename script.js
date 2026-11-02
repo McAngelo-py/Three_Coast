@@ -24,7 +24,8 @@ document.querySelectorAll('.filters button').forEach(function (b) {
     var filter = b.dataset.f;
 
     document.querySelectorAll('.card').forEach(function (card) {
-      card.hidden = filter !== 'all' && card.dataset.c !== filter;
+      card.hidden = card.dataset.active === 'false' ||
+        (filter !== 'all' && card.dataset.c !== filter);
     });
   });
 });
@@ -73,13 +74,14 @@ if (window.location.protocol !== 'file:') {
 
       function loadRemoteImage(image, onload) {
         var remoteImage = new Image();
+        var imageUrl = image.url + (image.url.includes('?') ? '&' : '?') + 'v=' + Date.now();
         remoteImage.onload = function () {
-          onload(image.url);
+          onload(imageUrl);
         };
         remoteImage.onerror = function () {
           console.warn('Using the bundled image because the Cloudinary image is unavailable:', image.url);
         };
-        remoteImage.src = image.url;
+        remoteImage.src = imageUrl;
       }
 
       var logo = document.querySelector('.logo img');
@@ -126,6 +128,15 @@ if (window.location.protocol !== 'file:') {
     })
     .then(function (data) {
       var grid = document.querySelector('#shop .grid');
+      var activeProductIds = new Set(data.products.map(function (product) {
+        return product.id;
+      }));
+
+      grid.querySelectorAll('.card[data-product-id]').forEach(function (card) {
+        var isActive = activeProductIds.has(card.dataset.productId);
+        card.dataset.active = String(isActive);
+        card.hidden = !isActive;
+      });
 
       data.products.forEach(function (product) {
         var existingCard = Array.from(grid.querySelectorAll('.card'))
@@ -134,6 +145,8 @@ if (window.location.protocol !== 'file:') {
           });
 
         if (existingCard) {
+          existingCard.dataset.active = String(product.is_active !== false);
+          existingCard.hidden = product.is_active === false;
           var stockState = existingCard.querySelector('.stock-state');
           if (stockState && product.stock !== null) {
             stockState.textContent = product.stock === 0
@@ -153,6 +166,7 @@ if (window.location.protocol !== 'file:') {
         card.className = 'card';
         card.dataset.c = product.coast;
         card.dataset.productId = product.id;
+        card.dataset.active = 'true';
 
         var artwork = document.createElement('div');
         artwork.className = 'art ' + product.coast;
@@ -200,7 +214,8 @@ if (window.location.protocol !== 'file:') {
       var activeFilter = document.querySelector('.filters button[aria-pressed="true"]');
       if (activeFilter && activeFilter.dataset.f !== 'all') {
         grid.querySelectorAll('.card').forEach(function (card) {
-          card.hidden = card.dataset.c !== activeFilter.dataset.f;
+          card.hidden = card.dataset.active === 'false' ||
+            card.dataset.c !== activeFilter.dataset.f;
         });
       }
     })
@@ -255,5 +270,35 @@ if (window.location.protocol !== 'file:') {
     })
     .catch(function (error) {
       console.warn('News posts could not be shown:', error.message);
+    });
+
+  fetch('/api/site-settings', { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('Site content settings could not be loaded.');
+      }
+      return response.json();
+    })
+    .then(function (data) {
+      var settings = data.settings;
+      var titleParts = settings.hero_title.trim().split(/\s+/);
+      var heroTitle = document.querySelector('.hero h1');
+      var firstTitleLine = heroTitle.querySelector('span:first-child');
+      var secondTitleLine = heroTitle.querySelector('.l2');
+      firstTitleLine.textContent = titleParts.shift() || '';
+      secondTitleLine.textContent = titleParts.join(' ');
+      secondTitleLine.style.display = secondTitleLine.textContent ? '' : 'none';
+
+      document.querySelector('.hero-content > p').textContent = settings.hero_description;
+      document.querySelector('#shop .head h2').textContent = settings.shop_title;
+      document.querySelector('#first-drop-title').textContent = settings.first_drop_title;
+      document.querySelector('.first-drop p').textContent = settings.first_drop_subtitle;
+      document.querySelector('.about h2').textContent = settings.about_title;
+      document.querySelector('.about > p').textContent = settings.about_body;
+      document.querySelector('.drop h2').textContent = settings.signup_title;
+      document.querySelector('.drop > p').textContent = settings.signup_body;
+    })
+    .catch(function (error) {
+      console.warn('Using the bundled site content:', error.message);
     });
 }

@@ -25,7 +25,16 @@ module.exports = function handler(req, res) {
     return sendJson(res, 401, { error: 'Please sign in again.' });
   }
 
-  const config = getCloudinaryConfig();
+  let config;
+  try {
+    config = getCloudinaryConfig();
+  } catch (error) {
+    if (error.statusCode === 503) {
+      return sendJson(res, 503, { error: error.message });
+    }
+    throw error;
+  }
+
   if (!config) {
     return sendJson(res, 503, { error: 'Cloudinary is not configured.' });
   }

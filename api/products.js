@@ -11,8 +11,9 @@ module.exports = async function handler(req, res) {
     await ensureDatabase(sql);
     const products = await sql`
       SELECT id, name, coast, description, price::float8 AS price, stock,
-             image_url, is_seeded
+             image_url, is_seeded, is_active
       FROM products
+      WHERE is_active = TRUE
       ORDER BY is_seeded DESC, created_at ASC
     `;
 

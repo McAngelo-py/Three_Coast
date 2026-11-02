@@ -13,8 +13,8 @@ The Google Fonts used by the page load from the internet. The page and local ima
 - `index.html` — page markup and content
 - `styles.css` — layout, responsive styles, loading screen, and shirt modal
 - `script.js` — product filtering, loading screen dismissal, email form response, product inventory, news posts, and shirt modal behavior
-- `admin.html`, `admin.css`, and `admin.js` — password-protected image, product, inventory, and news management
-- `api/` — Vercel serverless API for signed uploads and database-backed products and posts
+- `admin.html`, `admin.css`, and `admin.js` — password-protected admin dashboard and content tools
+- `api/` — Vercel serverless API for signed uploads, store data, site settings, and admin activity
 - `images/` — logo, shirt images, and hero video
 
 ## Interactions
@@ -24,9 +24,16 @@ The Google Fonts used by the page load from the internet. The page and local ima
 - Submit an email in the Drop section to see a confirmation message. This is a front-end demonstration and does not send or store email addresses.
 - Use the footer’s “Back to top” link to return to the page start.
 
-## Admin image management
+## Admin dashboard
 
-The admin page at `/admin.html` lets an authenticated admin replace the logo and the Pacific, Atlantic, and Gulf feature images. The site continues to use the local images until Cloudinary is configured.
+The admin page at `/admin.html` includes:
+
+- Overview metrics, low-stock alerts (3 units or fewer), sold-out counts, and recent admin activity.
+- Product search and filters, full product editing, image replacement, inventory updates, and hide/show controls.
+- News-post creation and editing with draft/published status.
+- Site image replacement and editable storefront copy for the hero, drop, story, and signup sections.
+
+Products and posts are stored in Neon Postgres. Existing Season 01 items are seeded automatically. Schema upgrades are applied safely during the first API request after deployment.
 
 1. Deploy the site to Vercel.
 2. In Cloudinary, create an account and note the cloud name, API key, and API secret.
@@ -39,8 +46,8 @@ The admin page at `/admin.html` lets an authenticated admin replace the logo and
 4. Create a Neon Postgres project and add its pooled connection string as `DATABASE_URL`. Use the connection string from Neon’s dashboard; keep it private.
 5. Redeploy after adding the variables, then open `https://your-domain/admin.html`.
 
-The upload API signs requests on the server and requires the admin password; Cloudinary secrets are never sent to the browser. Uploads overwrite fixed Cloudinary public IDs and request CDN invalidation so the changed image appears on the site. The upload form accepts JPG, PNG, WebP, or AVIF images up to 10 MB.
+The upload API signs requests on the server and requires the admin password; Cloudinary secrets are never sent to the browser. Site image uploads overwrite fixed Cloudinary public IDs and request CDN invalidation; product/post images receive unique IDs. Uploads accept JPG, PNG, WebP, or AVIF images up to 10 MB.
 
-The admin page also creates product listings and news posts. Product stock is managed manually and shown on the storefront; this does not add checkout or automatically decrement stock. Existing Season 01 products are added to the database automatically so their stock can be set from the admin page. Database tables are initialized automatically on the first API request. For local development with serverless API routes, use the Vercel CLI (`vercel dev`) and set the same environment variables locally.
+Product stock is managed manually and shown on the storefront; this does not add checkout or automatically decrement stock. Published posts are shown on the storefront; drafts are admin-only. For local development with serverless API routes, use the Vercel CLI (`vercel dev`) and set the same environment variables locally.
 
 Copy `.env.example` to `.env` for local settings, fill in `DATABASE_URL` and the Cloudinary credentials, and use your existing admin credentials. Never commit `.env`; it is ignored by Git.

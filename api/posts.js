@@ -10,8 +10,9 @@ module.exports = async function handler(req, res) {
     const sql = getDatabase();
     await ensureDatabase(sql);
     const posts = await sql`
-      SELECT id, title, body, image_url, created_at
+      SELECT id, title, body, image_url, status, created_at, updated_at
       FROM news_posts
+      WHERE status = 'published'
       ORDER BY created_at DESC
       LIMIT 30
     `;

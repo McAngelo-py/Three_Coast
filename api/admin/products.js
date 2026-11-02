@@ -10,7 +10,8 @@ const {
   databaseError,
   ensureDatabase,
   getDatabase,
-  isCloudinaryImageUrl
+  isCloudinaryImageUrl,
+  recordActivity
 } = require('../../lib/database');
 
 function validProduct(body) {
@@ -26,12 +27,13 @@ function validProduct(body) {
     Number.isInteger(body.stock) &&
     body.stock >= 0 &&
     body.stock <= 1000000 &&
+    (body.isActive === undefined || typeof body.isActive === 'boolean') &&
     isCloudinaryImageUrl(body.imageUrl);
 }
 
 module.exports = async function handler(req, res) {
-  if (!['GET', 'POST', 'PATCH', 'DELETE'].includes(req.method)) {
-    return methodNotAllowed(res, 'GET, POST, PATCH, DELETE');
+  if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
+    return methodNotAllowed(res, 'GET, POST, PATCH');
   }
 
   if (req.method !== 'GET' && !isSameOrigin(req)) {
@@ -49,7 +51,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'GET') {
       const products = await sql`
         SELECT id, name, coast, description, price::float8 AS price, stock,
-               image_url, is_seeded
+               image_url, is_seeded, is_active, created_at, updated_at
         FROM products
         ORDER BY is_seeded DESC, created_at ASC
       `;
@@ -70,7 +72,7 @@ module.exports = async function handler(req, res) {
 
       const id = crypto.randomUUID();
       const [product] = await sql`
-        INSERT INTO products (id, name, coast, description, price, stock, image_url)
+        INSERT INTO products (id, name, coast, description, price, stock, image_url, is_active)
         VALUES (
           ${id},
           ${body.name.trim()},
@@ -78,11 +80,13 @@ module.exports = async function handler(req, res) {
           ${body.description.trim()},
           ${body.price},
           ${body.stock},
-          ${body.imageUrl || null}
+          ${body.imageUrl || null},
+          ${body.isActive !== false}
         )
         RETURNING id, name, coast, description, price::float8 AS price, stock,
-                  image_url, is_seeded
+                  image_url, is_seeded, is_active, created_at, updated_at
       `;
+      await recordActivity(sql, 'created', 'product', id, `Added product “${product.name}”.`);
       return sendJson(res, 201, { product });
     }
 
@@ -91,32 +95,38 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'PATCH') {
-      if (!Number.isInteger(body.stock) || body.stock < 0 || body.stock > 1000000) {
-        return sendJson(res, 400, { error: 'Stock must be a whole number between 0 and 1,000,000.' });
+      if (!validProduct(body)) {
+        return sendJson(res, 400, { error: 'Enter valid product details, a whole-number stock count, and a valid Cloudinary image URL.' });
       }
 
       const [product] = await sql`
         UPDATE products
-        SET stock = ${body.stock}
+        SET name = ${body.name.trim()},
+            coast = ${body.coast},
+            description = ${body.description.trim()},
+            price = ${body.price},
+            stock = ${body.stock},
+            image_url = ${body.imageUrl || null},
+            is_active = ${body.isActive !== false},
+            updated_at = NOW()
         WHERE id = ${body.id}
         RETURNING id, name, coast, description, price::float8 AS price, stock,
-                  image_url, is_seeded
+                  image_url, is_seeded, is_active, created_at, updated_at
       `;
       if (!product) {
         return sendJson(res, 404, { error: 'Product not found.' });
       }
+      await recordActivity(
+        sql,
+        'updated',
+        'product',
+        product.id,
+        `${product.is_active ? 'Updated' : 'Hid'} product “${product.name}”.`
+      );
       return sendJson(res, 200, { product });
     }
 
-    const [deleted] = await sql`
-      DELETE FROM products
-      WHERE id = ${body.id} AND is_seeded = FALSE
-      RETURNING id
-    `;
-    if (!deleted) {
-      return sendJson(res, 404, { error: 'Product not found or cannot be removed.' });
-    }
-    return sendJson(res, 200, { deleted: true });
+    return sendJson(res, 405, { error: 'Method not allowed.' });
   } catch (error) {
     return databaseError(res, error, 'managing products');
   }

@@ -6,7 +6,16 @@ module.exports = function handler(req, res) {
     return methodNotAllowed(res, 'GET');
   }
 
-  const config = getCloudinaryConfig();
+  let config;
+  try {
+    config = getCloudinaryConfig();
+  } catch (error) {
+    if (error.statusCode === 503) {
+      return sendJson(res, 503, { error: error.message });
+    }
+    throw error;
+  }
+
   if (!config) {
     return sendJson(res, 200, { cloudName: null, images: {} });
   }
