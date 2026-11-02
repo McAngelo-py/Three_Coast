@@ -57,3 +57,63 @@ shirtModal.addEventListener('click', function (event) {
     shirtModal.close();
   }
 });
+
+if (window.location.protocol !== 'file:') {
+  fetch('/api/images', { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('Image configuration could not be loaded.');
+      }
+      return response.json();
+    })
+    .then(function (config) {
+      if (!config.cloudName || !config.images) {
+        return;
+      }
+
+      function loadRemoteImage(image, onload) {
+        var remoteImage = new Image();
+        remoteImage.onload = function () {
+          onload(image.url);
+        };
+        remoteImage.onerror = function () {
+          console.warn('Using the bundled image because the Cloudinary image is unavailable:', image.url);
+        };
+        remoteImage.src = image.url;
+      }
+
+      var logo = document.querySelector('.logo img');
+      if (config.images.logo && logo) {
+        loadRemoteImage(config.images.logo, function (url) {
+          logo.src = url;
+        });
+      }
+
+      [
+        ['pacific', '.coast.pac'],
+        ['atlantic', '.coast.atl'],
+        ['gulf', '.coast.gulf']
+      ].forEach(function (entry) {
+        var image = config.images[entry[0]];
+        var coast = document.querySelector(entry[1]);
+        if (!image || !coast) {
+          return;
+        }
+
+        loadRemoteImage(image, function (url) {
+          coast.style.setProperty('--coast-image', 'url("' + url + '")');
+          var product = coast.querySelector('.coast-product');
+          if (product) {
+            product.dataset.image = url;
+            var productImage = product.querySelector('img');
+            if (productImage) {
+              productImage.src = url;
+            }
+          }
+        });
+      });
+    })
+    .catch(function (error) {
+      console.warn('Using the bundled site images:', error.message);
+    });
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Image Admin | Three Coast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <a class="back-link" href="/">← Three Coast site</a>
+    <header>
+      <p class="eyebrow">Three Coast · Site tools</p>
+      <h1>Image admin</h1>
+      <p class="intro">Replace the logo or a coast feature image. Changes are uploaded to Cloudinary.</p>
+    </header>
+
+    <section class="panel" id="login-panel">
+      <h2>Admin sign in</h2>
+      <form id="login-form">
+        <label for="password">Admin password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">Sign in</button>
+      </form>
+    </section>
+
+    <section class="panel" id="upload-panel" hidden>
+      <div class="panel-heading">
+        <h2>Replace an image</h2>
+        <button class="secondary-button" id="logout-button" type="button">Sign out</button>
+      </div>
+      <form id="upload-form">
+        <label for="image-slot">Site image</label>
+        <select id="image-slot" name="slot" required></select>
+        <div class="preview-wrap">
+          <img id="image-preview" alt="Selected image preview">
+        </div>
+        <label for="image-file">New image</label>
+        <input id="image-file" name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required>
+        <p class="hint">JPG, PNG, WebP, or AVIF. Maximum file size: 10 MB.</p>
+        <button id="upload-button" type="submit">Upload image</button>
+      </form>
+    </section>
+
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>
