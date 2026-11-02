@@ -14,6 +14,33 @@ if (document.readyState === 'complete') {
   window.setTimeout(hideLoadingScreen, 8000);
 }
 
+function applyCategoryFilter(category) {
+  var cards = Array.from(document.querySelectorAll('#shop .card'));
+  var visibleCards = cards.filter(function (card) {
+    var visible = card.dataset.active !== 'false' &&
+      (category === 'all' || card.dataset.category === category);
+    card.hidden = !visible;
+    return visible;
+  });
+  var emptyState = document.getElementById('category-empty-state');
+  if (emptyState) {
+    emptyState.hidden = visibleCards.length > 0;
+    emptyState.textContent = category === 'all'
+      ? 'New products coming soon.'
+      : productCategoryLabel(category) + ' coming soon.';
+  }
+}
+
+function productCategoryLabel(category) {
+  return {
+    't-shirts': 'T-shirts',
+    hoodies: 'Hoodies',
+    pants: 'Pants',
+    shorts: 'Shorts',
+    headwear: 'Headwear'
+  }[category] || category;
+}
+
 document.querySelectorAll('.filters button').forEach(function (b) {
   b.addEventListener('click', function () {
     document.querySelectorAll('.filters button').forEach(function (x) {
@@ -21,12 +48,7 @@ document.querySelectorAll('.filters button').forEach(function (b) {
     });
 
     b.setAttribute('aria-pressed', 'true');
-    var filter = b.dataset.f;
-
-    document.querySelectorAll('.card').forEach(function (card) {
-      card.hidden = card.dataset.active === 'false' ||
-        (filter !== 'all' && card.dataset.c !== filter);
-    });
+    applyCategoryFilter(b.dataset.categoryFilter);
   });
 });
 
@@ -145,8 +167,33 @@ if (window.location.protocol !== 'file:') {
           });
 
         if (existingCard) {
+          existingCard.dataset.category = product.category;
           existingCard.dataset.active = String(product.is_active !== false);
           existingCard.hidden = product.is_active === false;
+          var productTitle = existingCard.querySelector('h3');
+          var productDescription = existingCard.querySelector('.product-description');
+          var productPrice = existingCard.querySelector('.price');
+          if (productTitle) {
+            productTitle.textContent = product.name;
+          }
+          if (productDescription) {
+            productDescription.textContent =
+              productCategoryLabel(product.category) + ' · ' + product.description;
+          }
+          if (productPrice) {
+            productPrice.textContent = '$' + Number(product.price).toFixed(2);
+          }
+          var artwork = existingCard.querySelector('.art');
+          if (artwork && product.image_url) {
+            var existingImage = artwork.querySelector('.product-image');
+            if (!existingImage) {
+              existingImage = document.createElement('img');
+              existingImage.className = 'product-image';
+              artwork.replaceChildren(existingImage);
+            }
+            existingImage.src = product.image_url;
+            existingImage.alt = product.name;
+          }
           var stockState = existingCard.querySelector('.stock-state');
           if (stockState && product.stock !== null) {
             stockState.textContent = product.stock === 0
@@ -164,12 +211,12 @@ if (window.location.protocol !== 'file:') {
 
         var card = document.createElement('article');
         card.className = 'card';
-        card.dataset.c = product.coast;
+        card.dataset.category = product.category;
         card.dataset.productId = product.id;
         card.dataset.active = 'true';
 
         var artwork = document.createElement('div');
-        artwork.className = 'art ' + product.coast;
+        artwork.className = 'art';
         if (product.image_url) {
           var image = document.createElement('img');
           image.className = 'product-image';
@@ -192,7 +239,8 @@ if (window.location.protocol !== 'file:') {
         title.textContent = product.name;
         description.appendChild(title);
         var details = document.createElement('small');
-        details.textContent = product.coast.toUpperCase() + ' · ' + product.description;
+        details.textContent = productCategoryLabel(product.category) + ' · ' + product.description;
+        details.className = 'product-description';
         description.appendChild(details);
         if (product.stock !== null) {
           var stock = document.createElement('small');
@@ -212,11 +260,8 @@ if (window.location.protocol !== 'file:') {
       });
 
       var activeFilter = document.querySelector('.filters button[aria-pressed="true"]');
-      if (activeFilter && activeFilter.dataset.f !== 'all') {
-        grid.querySelectorAll('.card').forEach(function (card) {
-          card.hidden = card.dataset.active === 'false' ||
-            card.dataset.c !== activeFilter.dataset.f;
-        });
+      if (activeFilter) {
+        applyCategoryFilter(activeFilter.dataset.categoryFilter);
       }
     })
     .catch(function (error) {

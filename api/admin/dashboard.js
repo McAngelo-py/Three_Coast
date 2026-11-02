@@ -71,7 +71,7 @@ module.exports = async function handler(req, res) {
       FROM news_posts
     `;
     const lowStock = await sql`
-      SELECT id, name, coast, stock, is_seeded
+      SELECT id, name, category, stock, is_seeded
       FROM products
       WHERE is_active = TRUE AND stock > 0 AND stock <= ${LOW_STOCK_THRESHOLD}
       ORDER BY stock ASC, name ASC

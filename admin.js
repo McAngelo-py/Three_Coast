@@ -31,6 +31,17 @@ var localImagePreviews = {
   atlantic: 'images/downloadgram.org_627142527_17880359901460731_4979456962535940000_n.jpg',
   gulf: 'images/downloadgram.org_627298203_17880359904460731_2805433561778415820_n.jpg'
 };
+var productCategoryLabels = {
+  't-shirts': 'T-shirts',
+  hoodies: 'Hoodies',
+  pants: 'Pants',
+  shorts: 'Shorts',
+  headwear: 'Headwear'
+};
+
+function productCategoryLabel(category) {
+  return productCategoryLabels[category] || category;
+}
 var viewTitles = {
   dashboard: 'Overview',
   products: 'Products',
@@ -167,7 +178,7 @@ function renderLowStock(items) {
     row.className = 'compact-row';
     var details = document.createElement('div');
     appendText(details, 'strong', '', product.name);
-    appendText(details, 'small', '', product.coast.toUpperCase());
+    appendText(details, 'small', '', productCategoryLabel(product.category));
     row.appendChild(details);
     var stock = document.createElement('span');
     stock.className = 'stock-pill' + (product.stock === 0 ? ' is-sold-out' : '');
@@ -208,15 +219,11 @@ function renderActivity(items) {
   });
 }
 
-function coastName(coast) {
-  return { pac: 'Pacific', atl: 'Atlantic', gulf: 'Gulf' }[coast] || coast;
-}
-
 function productMatchesFilters(product) {
   var query = document.getElementById('product-search').value.trim().toLowerCase();
   var filter = document.getElementById('product-filter').value;
   var matchesSearch = !query ||
-    (product.name + ' ' + product.description + ' ' + coastName(product.coast))
+    (product.name + ' ' + product.description + ' ' + productCategoryLabel(product.category))
       .toLowerCase().includes(query);
   var matchesFilter = filter === 'all' ||
     (filter === 'active' && product.is_active) ||
@@ -253,7 +260,7 @@ function renderProducts() {
       thumb.src = product.image_url;
     } else {
       thumb.classList.add('table-placeholder');
-      thumb.src = localImagePreviews[product.coast];
+      thumb.src = localImagePreviews.logo;
     }
     productInfo.appendChild(thumb);
     var details = document.createElement('div');
@@ -263,7 +270,7 @@ function renderProducts() {
     productCell.appendChild(productInfo);
     row.appendChild(productCell);
 
-    appendText(row, 'td', '', coastName(product.coast));
+    appendText(row, 'td', '', productCategoryLabel(product.category));
     appendText(row, 'td', '', '$' + Number(product.price).toFixed(2));
 
     var stockCell = document.createElement('td');
@@ -292,6 +299,7 @@ function renderProducts() {
       false
     ));
     actions.appendChild(actionButton('Stock', 'stock-product', product.id, false));
+    actions.appendChild(actionButton('Delete', 'delete-product', product.id, true));
     actionCell.appendChild(actions);
     row.appendChild(actionCell);
     table.appendChild(row);
@@ -372,7 +380,7 @@ function openProductEditor(product) {
     setFormFields(productForm, {
       id: product.id,
       name: product.name,
-      coast: product.coast,
+      category: product.category,
       description: product.description,
       price: product.price,
       stock: product.stock,
@@ -570,7 +578,7 @@ productForm.addEventListener('submit', async function (event) {
     }
     var payload = {
       name: form.get('name'),
-      coast: form.get('coast'),
+      category: form.get('category'),
       description: form.get('description'),
       price: Number(form.get('price')),
       stock: Number(form.get('stock')),
@@ -656,6 +664,26 @@ document.getElementById('products-table').addEventListener('click', async functi
     openProductEditor(product);
     return;
   }
+  if (button.dataset.action === 'delete-product') {
+    if (!window.confirm('Delete “' + product.name + '”? This cannot be undone.')) {
+      return;
+    }
+    button.disabled = true;
+    try {
+      await requestJson('/api/admin/products', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: product.id })
+      });
+      await refreshAdminContent();
+      setStatus('Product deleted.', false);
+    } catch (error) {
+      setStatus(error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+    return;
+  }
   if (button.dataset.action === 'stock-product') {
     var nextStock = window.prompt('Set stock quantity for ' + product.name + ':', String(product.stock === null ? 0 : product.stock));
     if (nextStock === null) {
@@ -673,7 +701,7 @@ document.getElementById('products-table').addEventListener('click', async functi
         body: JSON.stringify({
           id: product.id,
           name: product.name,
-          coast: product.coast,
+          category: product.category,
           description: product.description,
           price: Number(product.price),
           stock: Number(nextStock),
@@ -699,7 +727,7 @@ document.getElementById('products-table').addEventListener('click', async functi
         body: JSON.stringify({
           id: product.id,
           name: product.name,
-          coast: product.coast,
+          category: product.category,
           description: product.description,
           price: Number(product.price),
           stock: product.stock,

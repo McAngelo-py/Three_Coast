@@ -11,14 +11,15 @@ const {
   ensureDatabase,
   getDatabase,
   isCloudinaryImageUrl,
-  recordActivity
+  recordActivity,
+  PRODUCT_CATEGORIES
 } = require('../../lib/database');
 
 function validProduct(body) {
   return typeof body.name === 'string' &&
     body.name.trim().length > 0 &&
     body.name.trim().length <= 80 &&
-    ['pac', 'atl', 'gulf'].includes(body.coast) &&
+    PRODUCT_CATEGORIES.includes(body.category) &&
     typeof body.description === 'string' &&
     body.description.trim().length <= 240 &&
     Number.isFinite(body.price) &&
@@ -32,8 +33,8 @@ function validProduct(body) {
 }
 
 module.exports = async function handler(req, res) {
-  if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
-    return methodNotAllowed(res, 'GET, POST, PATCH');
+  if (!['GET', 'POST', 'PATCH', 'DELETE'].includes(req.method)) {
+    return methodNotAllowed(res, 'GET, POST, PATCH, DELETE');
   }
 
   if (req.method !== 'GET' && !isSameOrigin(req)) {
@@ -50,7 +51,7 @@ module.exports = async function handler(req, res) {
 
     if (req.method === 'GET') {
       const products = await sql`
-        SELECT id, name, coast, description, price::float8 AS price, stock,
+        SELECT id, name, category, description, price::float8 AS price, stock,
                image_url, is_seeded, is_active, created_at, updated_at
         FROM products
         ORDER BY is_seeded DESC, created_at ASC
@@ -67,23 +68,23 @@ module.exports = async function handler(req, res) {
 
     if (req.method === 'POST') {
       if (!validProduct(body)) {
-        return sendJson(res, 400, { error: 'Enter a name, coast, description, valid price, stock count, and valid Cloudinary image URL.' });
+        return sendJson(res, 400, { error: 'Enter a name, category, description, valid price, stock count, and valid Cloudinary image URL.' });
       }
 
       const id = crypto.randomUUID();
       const [product] = await sql`
-        INSERT INTO products (id, name, coast, description, price, stock, image_url, is_active)
+        INSERT INTO products (id, name, category, description, price, stock, image_url, is_active)
         VALUES (
           ${id},
           ${body.name.trim()},
-          ${body.coast},
+          ${body.category},
           ${body.description.trim()},
           ${body.price},
           ${body.stock},
           ${body.imageUrl || null},
           ${body.isActive !== false}
         )
-        RETURNING id, name, coast, description, price::float8 AS price, stock,
+        RETURNING id, name, category, description, price::float8 AS price, stock,
                   image_url, is_seeded, is_active, created_at, updated_at
       `;
       await recordActivity(sql, 'created', 'product', id, `Added product “${product.name}”.`);
@@ -102,7 +103,7 @@ module.exports = async function handler(req, res) {
       const [product] = await sql`
         UPDATE products
         SET name = ${body.name.trim()},
-            coast = ${body.coast},
+            category = ${body.category},
             description = ${body.description.trim()},
             price = ${body.price},
             stock = ${body.stock},
@@ -110,7 +111,7 @@ module.exports = async function handler(req, res) {
             is_active = ${body.isActive !== false},
             updated_at = NOW()
         WHERE id = ${body.id}
-        RETURNING id, name, coast, description, price::float8 AS price, stock,
+        RETURNING id, name, category, description, price::float8 AS price, stock,
                   image_url, is_seeded, is_active, created_at, updated_at
       `;
       if (!product) {
@@ -126,7 +127,22 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 200, { product });
     }
 
-    return sendJson(res, 405, { error: 'Method not allowed.' });
+    const [deleted] = await sql`
+      DELETE FROM products
+      WHERE id = ${body.id}
+      RETURNING id, name
+    `;
+    if (!deleted) {
+      return sendJson(res, 404, { error: 'Product not found.' });
+    }
+    await recordActivity(
+      sql,
+      'deleted',
+      'product',
+      deleted.id,
+      `Deleted product “${deleted.name}”.`
+    );
+    return sendJson(res, 200, { deleted: true });
   } catch (error) {
     return databaseError(res, error, 'managing products');
   }

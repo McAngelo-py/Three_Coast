@@ -19,7 +19,7 @@ The Google Fonts used by the page load from the internet. The page and local ima
 
 ## Interactions
 
-- Filter the product cards by coast using the buttons in the Season 01 section.
+- Filter the product cards by category using the buttons in the Season 01 section.
 - Hover over or focus a coast panel to reveal its shirt; select it to open a larger preview. On small screens, the shirt previews remain visible.
 - Submit an email in the Drop section to see a confirmation message. This is a front-end demonstration and does not send or store email addresses.
 - Use the footer’s “Back to top” link to return to the page start.
@@ -29,11 +29,11 @@ The Google Fonts used by the page load from the internet. The page and local ima
 The admin page at `/admin.html` includes:
 
 - Overview metrics, low-stock alerts (3 units or fewer), sold-out counts, and recent admin activity.
-- Product search and filters, full product editing, image replacement, inventory updates, and hide/show controls.
+- Product search and category filters, full product editing, image replacement, inventory updates, and hide/show controls.
 - News-post creation and editing with draft/published status.
 - Site image replacement and editable storefront copy for the hero, drop, story, and signup sections.
 
-Products and posts are stored in Neon Postgres. Existing Season 01 items are seeded automatically. Schema upgrades are applied safely during the first API request after deployment.
+Products and posts are stored in Neon Postgres. Products use T-shirts, Hoodies, Pants, Shorts, or Headwear categories; existing Season 01 items are assigned to their matching category during the schema migration. Schema upgrades are applied safely during the first API request after deployment.
 
 1. Deploy the site to Vercel.
 2. In Cloudinary, create an account and note the cloud name, API key, and API secret.

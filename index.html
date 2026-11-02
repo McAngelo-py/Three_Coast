@@ -50,21 +50,24 @@
 <section id="shop">
 <div class="head">
 <h2>Season 01</h2>
-<div class="filters" role="group" aria-label="Filter by coast">
-<button aria-pressed="true" data-f="all">All</button>
-<button aria-pressed="false" data-f="pac">Pacific</button>
-<button aria-pressed="false" data-f="atl">Atlantic</button>
-<button aria-pressed="false" data-f="gulf">Gulf</button>
+<div class="filters" role="group" aria-label="Filter by category">
+<button aria-pressed="true" data-category-filter="all">All</button>
+<button aria-pressed="false" data-category-filter="t-shirts">T-shirts</button>
+<button aria-pressed="false" data-category-filter="hoodies">Hoodies</button>
+<button aria-pressed="false" data-category-filter="pants">Pants</button>
+<button aria-pressed="false" data-category-filter="shorts">Shorts</button>
+<button aria-pressed="false" data-category-filter="headwear">Headwear</button>
 </div>
 </div>
 <div class="grid">
-<article class="card" data-c="pac" data-product-id="seed-tide-line"><div class="art pac"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Tide Line Tee</h3><small>Pacific · Boxy fit</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
-<article class="card" data-c="atl" data-product-id="seed-subway-hoodie"><div class="art atl"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Subway Hoodie</h3><small>Atlantic · 480gsm</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
-<article class="card" data-c="gulf" data-product-id="seed-bayou-cap"><div class="art gulf"><svg><use href="#cap"/></svg></div><div class="info"><div><h3>Bayou Cap</h3><small>Gulf · Washed twill</small><small class="stock-state" hidden></small></div><span class="price">$38</span></div></article>
-<article class="card" data-c="atl" data-product-id="seed-late-train"><div class="art atl"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Late Train Tee</h3><small>Atlantic · Oversized</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
-<article class="card" data-c="pac" data-product-id="seed-pier-cargo"><div class="art pac"><svg><use href="#pants"/></svg></div><div class="info"><div><h3>Pier Cargo Pant</h3><small>Pacific · Wide leg</small><small class="stock-state" hidden></small></div><span class="price">$110</span></div></article>
-<article class="card" data-c="gulf" data-product-id="seed-humidity-hoodie"><div class="art gulf"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Humidity Hoodie</h3><small>Gulf · Cropped</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
+<article class="card" data-category="t-shirts" data-product-id="seed-tide-line"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Tide Line Tee</h3><small class="product-description">T-shirts · Boxy fit</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
+<article class="card" data-category="hoodies" data-product-id="seed-subway-hoodie"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Subway Hoodie</h3><small class="product-description">Hoodies · 480gsm</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
+<article class="card" data-category="headwear" data-product-id="seed-bayou-cap"><div class="art"><svg><use href="#cap"/></svg></div><div class="info"><div><h3>Bayou Cap</h3><small class="product-description">Headwear · Washed twill</small><small class="stock-state" hidden></small></div><span class="price">$38</span></div></article>
+<article class="card" data-category="t-shirts" data-product-id="seed-late-train"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Late Train Tee</h3><small class="product-description">T-shirts · Oversized</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
+<article class="card" data-category="pants" data-product-id="seed-pier-cargo"><div class="art"><svg><use href="#pants"/></svg></div><div class="info"><div><h3>Pier Cargo Pant</h3><small class="product-description">Pants · Wide leg</small><small class="stock-state" hidden></small></div><span class="price">$110</span></div></article>
+<article class="card" data-category="hoodies" data-product-id="seed-humidity-hoodie"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Humidity Hoodie</h3><small class="product-description">Hoodies · Cropped</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
 </div>
+<p class="category-empty-state" id="category-empty-state" role="status" hidden></p>
 </section>
 
 <section class="news-section" id="news" hidden>

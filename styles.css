@@ -39,6 +39,8 @@ section{padding:72px 24px}
 .filters button{font:inherit;font-weight:700;background:transparent;border:3px solid var(--ink);padding:8px 18px;cursor:pointer}
 .filters button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
+.category-empty-state{margin:28px 0 0;padding:36px 20px;border:3px dashed var(--ink);text-align:center;font-family:var(--d);font-size:clamp(1.5rem,4vw,2.5rem);text-transform:uppercase}
+.category-empty-state[hidden]{display:none}
 .card{border:3px solid var(--ink);background:#fff}
 .card[hidden]{display:none}
 .card .art{aspect-ratio:1;display:grid;place-items:center;border-bottom:3px solid var(--ink)}
