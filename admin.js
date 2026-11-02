@@ -14,6 +14,7 @@ var uploadButton = document.getElementById('upload-button');
 var fileInput = document.getElementById('image-file');
 var slotSelect = document.getElementById('image-slot');
 var imagePreview = document.getElementById('image-preview');
+var imageStatus = document.getElementById('image-status');
 var productImagePreview = document.getElementById('product-image-preview');
 var postImagePreview = document.getElementById('post-image-preview');
 var productRemoveImage = document.getElementById('product-remove-image');
@@ -439,7 +440,16 @@ function setPreview(imageElement, localUrl, cloudUrl) {
 }
 
 async function loadImages() {
-  siteImages = await requestJson('/api/images', { cache: 'no-store' });
+  try {
+    siteImages = await requestJson('/api/images', { cache: 'no-store' });
+    imageStatus.hidden = true;
+    imageStatus.textContent = '';
+  } catch (error) {
+    siteImages = { cloudName: null, images: {} };
+    imageStatus.textContent =
+      'Cloudinary images could not be checked; showing bundled previews. ' + error.message;
+    imageStatus.hidden = false;
+  }
   slotSelect.replaceChildren();
   Object.keys(localImagePreviews).forEach(function (slot) {
     var option = document.createElement('option');
@@ -872,7 +882,4 @@ document.getElementById('logout-button').addEventListener('click', async functio
   }
 });
 
-loadImages().then(checkSession).catch(function (error) {
-  showLogin();
-  setLoginStatus(error.message);
-});
+checkSession();
