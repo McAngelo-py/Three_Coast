@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const {
   hasValidSession,
   isSameOrigin,
@@ -37,22 +38,32 @@ module.exports = function handler(req, res) {
   }
 
   const slot = IMAGE_SLOTS[body.slot];
-  if (!slot) {
+  const contentType = body.slot === 'product' || body.slot === 'post'
+    ? body.slot
+    : null;
+  if (!slot && !contentType) {
     return sendJson(res, 400, { error: 'Choose a valid site image.' });
   }
 
+  const publicId = slot
+    ? slot.publicId
+    : `three-coast/${contentType}s/${crypto.randomUUID()}`;
   const parameters = {
     allowed_formats: 'jpg,png,webp,avif',
-    invalidate: 'true',
-    overwrite: 'true',
-    public_id: slot.publicId,
+    public_id: publicId,
     timestamp: String(Math.floor(Date.now() / 1000))
   };
+
+  if (slot) {
+    parameters.invalidate = 'true';
+    parameters.overwrite = 'true';
+  }
 
   return sendJson(res, 200, {
     apiKey: config.apiKey,
     cloudName: config.cloudName,
     parameters,
+    publicId,
     signature: createUploadSignature(parameters, config.apiSecret)
   });
 };

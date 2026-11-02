@@ -116,4 +116,144 @@ if (window.location.protocol !== 'file:') {
     .catch(function (error) {
       console.warn('Using the bundled site images:', error.message);
     });
+
+  fetch('/api/products', { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('Product inventory could not be loaded.');
+      }
+      return response.json();
+    })
+    .then(function (data) {
+      var grid = document.querySelector('#shop .grid');
+
+      data.products.forEach(function (product) {
+        var existingCard = Array.from(grid.querySelectorAll('.card'))
+          .find(function (card) {
+            return card.dataset.productId === product.id;
+          });
+
+        if (existingCard) {
+          var stockState = existingCard.querySelector('.stock-state');
+          if (stockState && product.stock !== null) {
+            stockState.textContent = product.stock === 0
+              ? 'Sold out'
+              : product.stock + ' in stock';
+            stockState.classList.toggle('is-sold-out', product.stock === 0);
+            stockState.hidden = false;
+          }
+          return;
+        }
+
+        if (product.is_seeded) {
+          return;
+        }
+
+        var card = document.createElement('article');
+        card.className = 'card';
+        card.dataset.c = product.coast;
+        card.dataset.productId = product.id;
+
+        var artwork = document.createElement('div');
+        artwork.className = 'art ' + product.coast;
+        if (product.image_url) {
+          var image = document.createElement('img');
+          image.className = 'product-image';
+          image.src = product.image_url;
+          image.alt = product.name;
+          image.loading = 'lazy';
+          artwork.appendChild(image);
+        } else {
+          var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+          use.setAttribute('href', '#tee');
+          svg.appendChild(use);
+          artwork.appendChild(svg);
+        }
+
+        var info = document.createElement('div');
+        info.className = 'info';
+        var description = document.createElement('div');
+        var title = document.createElement('h3');
+        title.textContent = product.name;
+        description.appendChild(title);
+        var details = document.createElement('small');
+        details.textContent = product.coast.toUpperCase() + ' · ' + product.description;
+        description.appendChild(details);
+        if (product.stock !== null) {
+          var stock = document.createElement('small');
+          stock.className = 'stock-state' + (product.stock === 0 ? ' is-sold-out' : '');
+          stock.textContent = product.stock === 0 ? 'Sold out' : product.stock + ' in stock';
+          description.appendChild(stock);
+        }
+
+        var price = document.createElement('span');
+        price.className = 'price';
+        price.textContent = '$' + Number(product.price).toFixed(2);
+        info.appendChild(description);
+        info.appendChild(price);
+        card.appendChild(artwork);
+        card.appendChild(info);
+        grid.appendChild(card);
+      });
+
+      var activeFilter = document.querySelector('.filters button[aria-pressed="true"]');
+      if (activeFilter && activeFilter.dataset.f !== 'all') {
+        grid.querySelectorAll('.card').forEach(function (card) {
+          card.hidden = card.dataset.c !== activeFilter.dataset.f;
+        });
+      }
+    })
+    .catch(function (error) {
+      console.warn('Using the bundled shop products:', error.message);
+    });
+
+  fetch('/api/posts', { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('News posts could not be loaded.');
+      }
+      return response.json();
+    })
+    .then(function (data) {
+      if (data.posts.length === 0) {
+        return;
+      }
+
+      var section = document.getElementById('news');
+      var grid = document.getElementById('news-grid');
+      data.posts.forEach(function (post) {
+        var article = document.createElement('article');
+        article.className = 'news-card';
+
+        if (post.image_url) {
+          var image = document.createElement('img');
+          image.src = post.image_url;
+          image.alt = '';
+          image.loading = 'lazy';
+          article.appendChild(image);
+        }
+
+        var copy = document.createElement('div');
+        copy.className = 'news-card-copy';
+        if (post.created_at) {
+          var date = document.createElement('time');
+          date.dateTime = post.created_at;
+          date.textContent = new Date(post.created_at).toLocaleDateString();
+          copy.appendChild(date);
+        }
+        var title = document.createElement('h3');
+        title.textContent = post.title;
+        var body = document.createElement('p');
+        body.textContent = post.body;
+        copy.appendChild(title);
+        copy.appendChild(body);
+        article.appendChild(copy);
+        grid.appendChild(article);
+      });
+      section.hidden = false;
+    })
+    .catch(function (error) {
+      console.warn('News posts could not be shown:', error.message);
+    });
 }

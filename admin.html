@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Image Admin | Three Coast</title>
+  <title>Site Admin | Three Coast</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="admin.css">
@@ -14,8 +14,8 @@
     <a class="back-link" href="/">← Three Coast site</a>
     <header>
       <p class="eyebrow">Three Coast · Site tools</p>
-      <h1>Image admin</h1>
-      <p class="intro">Replace the logo or a coast feature image. Changes are uploaded to Cloudinary.</p>
+      <h1>Site admin</h1>
+      <p class="intro">Manage site images, shop products, inventory, and news posts.</p>
     </header>
 
     <section class="panel" id="login-panel">
@@ -43,6 +43,50 @@
         <p class="hint">JPG, PNG, WebP, or AVIF. Maximum file size: 10 MB.</p>
         <button id="upload-button" type="submit">Upload image</button>
       </form>
+    </section>
+
+    <section class="panel management-panel" id="management-panel" hidden>
+      <section class="admin-section" aria-labelledby="products-heading">
+        <h2 id="products-heading">Add a product</h2>
+        <form id="product-form">
+          <label for="product-name">Product name</label>
+          <input id="product-name" name="name" maxlength="80" required>
+          <label for="product-coast">Coast</label>
+          <select id="product-coast" name="coast" required>
+            <option value="pac">Pacific</option>
+            <option value="atl">Atlantic</option>
+            <option value="gulf">Gulf</option>
+          </select>
+          <label for="product-description">Details</label>
+          <input id="product-description" name="description" maxlength="240" placeholder="e.g. Boxy fit · Heavyweight cotton" required>
+          <label for="product-price">Price (USD)</label>
+          <input id="product-price" name="price" type="number" min="0" max="100000" step="0.01" required>
+          <label for="product-stock">Starting stock</label>
+          <input id="product-stock" name="stock" type="number" min="0" max="1000000" step="1" required>
+          <label for="product-image">Product image (optional)</label>
+          <input id="product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/avif">
+          <p class="hint">JPG, PNG, WebP, or AVIF. Maximum file size: 10 MB.</p>
+          <button id="product-submit" type="submit">Add product</button>
+        </form>
+        <h3 class="list-heading">Products and stock</h3>
+        <div class="record-list" id="product-list" aria-live="polite"></div>
+      </section>
+
+      <section class="admin-section" aria-labelledby="posts-heading">
+        <h2 id="posts-heading">Publish a news post</h2>
+        <form id="post-form">
+          <label for="post-title">Post title</label>
+          <input id="post-title" name="title" maxlength="100" required>
+          <label for="post-body">Post text</label>
+          <textarea id="post-body" name="body" maxlength="3000" rows="5" required></textarea>
+          <label for="post-image">Post image (optional)</label>
+          <input id="post-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/avif">
+          <p class="hint">JPG, PNG, WebP, or AVIF. Maximum file size: 10 MB.</p>
+          <button id="post-submit" type="submit">Publish post</button>
+        </form>
+        <h3 class="list-heading">Published posts</h3>
+        <div class="record-list" id="post-list" aria-live="polite"></div>
+      </section>
     </section>
 
     <p class="status" id="status" role="status" aria-live="polite"></p>
