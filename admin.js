@@ -269,12 +269,14 @@ function renderProducts() {
     appendText(details, 'small', '', product.is_seeded ? 'Season 01 item' : 'Custom product');
     productInfo.appendChild(details);
     productCell.appendChild(productInfo);
+    productCell.dataset.label = 'Product';
     row.appendChild(productCell);
 
-    appendText(row, 'td', '', productCategoryLabel(product.category));
-    appendText(row, 'td', '', '$' + Number(product.price).toFixed(2));
+    appendText(row, 'td', '', productCategoryLabel(product.category)).dataset.label = 'Category';
+    appendText(row, 'td', '', '$' + Number(product.price).toFixed(2)).dataset.label = 'Price';
 
     var stockCell = document.createElement('td');
+    stockCell.dataset.label = 'Stock';
     if (product.stock === null) {
       stockCell.textContent = 'Not tracked';
     } else {
@@ -286,10 +288,12 @@ function renderProducts() {
     row.appendChild(stockCell);
 
     var stateCell = document.createElement('td');
+    stateCell.dataset.label = 'Status';
     stateCell.appendChild(statusPill(product.is_active ? 'Visible' : 'Hidden', product.is_active ? '' : 'is-hidden'));
     row.appendChild(stateCell);
 
     var actionCell = document.createElement('td');
+    actionCell.dataset.label = 'Actions';
     var actions = document.createElement('div');
     actions.className = 'row-actions';
     actions.appendChild(actionButton('Edit', 'edit-product', product.id, false));
