@@ -36,6 +36,14 @@ const {
   getImageUrl
 } = require('../lib/cloudinary');
 
+const ORDER_STATUSES = Object.freeze([
+  'pending',
+  'processing',
+  'shipped',
+  'delivered',
+  'cancelled'
+]);
+
 function normalizePhone(value) {
   if (typeof value !== 'string') {
     return null;
@@ -241,6 +249,107 @@ async function adminProductsHandler(req, res) {
     return sendJson(res, 200, { deleted: true });
   } catch (error) {
     return databaseError(res, error, 'managing products');
+  }
+}
+
+async function adminOrdersHandler(req, res) {
+  if (!['GET', 'PATCH'].includes(req.method)) {
+    return methodNotAllowed(res, 'GET, PATCH');
+  }
+  if (req.method === 'PATCH' && !isSameOrigin(req)) {
+    return sendJson(res, 403, { error: 'Request origin is not allowed.' });
+  }
+  if (!hasValidSession(req)) {
+    return sendJson(res, 401, { error: 'Please sign in again.' });
+  }
+
+  let body;
+  if (req.method === 'PATCH') {
+    try {
+      body = readJsonBody(req);
+    } catch {
+      return sendJson(res, 400, { error: 'Request body must be valid JSON.' });
+    }
+    if (typeof body.id !== 'string' || body.id.length > 64 ||
+        !ORDER_STATUSES.includes(body.status)) {
+      return sendJson(res, 400, { error: 'Choose a valid order and status.' });
+    }
+  }
+
+  try {
+    const sql = getDatabase();
+    await ensureDatabase(sql);
+
+    if (req.method === 'GET') {
+      const orders = await sql`
+        SELECT o.id, o.status, o.shipping_address, o.total::float8 AS total,
+               o.created_at, o.updated_at,
+               a.first_name, a.last_name, a.phone,
+               COALESCE(
+                 json_agg(json_build_object(
+                   'product_id', oi.product_id,
+                   'name', oi.product_name,
+                   'price', oi.unit_price::float8,
+                   'quantity', oi.quantity
+                 )) FILTER (WHERE oi.id IS NOT NULL),
+                 '[]'::json
+               ) AS items
+        FROM orders o
+        JOIN accounts a ON a.id = o.account_id
+        LEFT JOIN order_items oi ON oi.order_id = o.id
+        GROUP BY o.id, a.id
+        ORDER BY o.created_at DESC
+        LIMIT 200
+      `;
+      return sendJson(res, 200, { orders });
+    }
+
+    const [updated] = await sql`
+      WITH changed AS (
+        UPDATE orders
+        SET status = ${body.status}, updated_at = NOW()
+        WHERE id = ${body.id}
+          AND (
+            (status = 'pending' AND ${body.status} IN ('processing', 'shipped', 'cancelled'))
+            OR (status = 'processing' AND ${body.status} IN ('shipped', 'cancelled'))
+            OR (status = 'shipped' AND ${body.status} = 'delivered')
+          )
+        RETURNING id
+      ),
+      restocked AS (
+        UPDATE products p
+        SET stock = p.stock + oi.quantity, updated_at = NOW()
+        FROM order_items oi
+        JOIN changed c ON c.id = oi.order_id
+        WHERE ${body.status} = 'cancelled'
+          AND p.id = oi.product_id
+        RETURNING p.id
+      )
+      SELECT id FROM changed
+    `;
+
+    if (!updated) {
+      const [existingOrder] = await sql`
+        SELECT status FROM orders WHERE id = ${body.id}
+      `;
+      if (!existingOrder) {
+        return sendJson(res, 404, { error: 'Order not found.' });
+      }
+      return sendJson(res, 409, {
+        error: `Order cannot move from ${existingOrder.status} to ${body.status}.`
+      });
+    }
+
+    await recordActivity(
+      sql,
+      'updated',
+      'order',
+      updated.id,
+      `Order ${updated.id} marked ${body.status}.`
+    );
+    return sendJson(res, 200, { updated: true, id: updated.id, status: body.status });
+  } catch (error) {
+    return databaseError(res, error, 'updating customer orders');
   }
 }
 
@@ -772,17 +881,165 @@ async function cartHandler(req, res) {
     if (product.stock === 0) {
       return sendJson(res, 409, { error: 'This product is sold out.' });
     }
+    if (product.stock === null) {
+      return sendJson(res, 409, { error: 'Stock has not been set for this product yet.' });
+    }
 
     const [item] = await sql`
       INSERT INTO cart_items (account_id, product_id, quantity)
       VALUES (${accountId}, ${body.productId}, 1)
       ON CONFLICT (account_id, product_id)
       DO UPDATE SET quantity = LEAST(cart_items.quantity + 1, 99), updated_at = NOW()
+      WHERE cart_items.quantity < (
+        SELECT stock FROM products WHERE id = EXCLUDED.product_id AND is_active = TRUE
+      )
       RETURNING product_id, quantity
     `;
+    if (!item) {
+      return sendJson(res, 409, { error: 'Your cart quantity has reached the available stock.' });
+    }
     return sendJson(res, 200, { item });
   } catch (error) {
     return databaseError(res, error, 'updating a customer cart');
+  }
+}
+
+async function ordersHandler(req, res) {
+  if (!['GET', 'POST'].includes(req.method)) {
+    return methodNotAllowed(res, 'GET, POST');
+  }
+  if (req.method === 'POST' && !isSameOrigin(req)) {
+    return sendJson(res, 403, { error: 'Request origin is not allowed.' });
+  }
+
+  const accountId = getAccountIdFromSession(req);
+  if (!accountId) {
+    return sendJson(res, 401, { error: 'Sign in to view or place orders.' });
+  }
+
+  try {
+    const sql = getDatabase();
+    await ensureDatabase(sql);
+
+    if (req.method === 'GET') {
+      const orders = await sql`
+        SELECT o.id, o.status, o.shipping_address, o.total::float8 AS total,
+               o.created_at, o.updated_at,
+               COALESCE(
+                 json_agg(json_build_object(
+                   'product_id', oi.product_id,
+                   'name', oi.product_name,
+                   'price', oi.unit_price::float8,
+                   'quantity', oi.quantity
+                 )) FILTER (WHERE oi.id IS NOT NULL),
+                 '[]'::json
+               ) AS items
+        FROM orders o
+        LEFT JOIN order_items oi ON oi.order_id = o.id
+        WHERE o.account_id = ${accountId}
+        GROUP BY o.id
+        ORDER BY o.created_at DESC
+      `;
+      return sendJson(res, 200, { orders });
+    }
+
+    const [accountRecord] = await sql`
+      SELECT address FROM accounts WHERE id = ${accountId}
+    `;
+    if (!accountRecord) {
+      return sendJson(res, 401, { error: 'Sign in to place an order.' });
+    }
+
+    const orderId = crypto.randomUUID();
+    const [result] = await sql`
+      WITH cart AS MATERIALIZED (
+        SELECT ci.product_id, ci.quantity, p.name AS product_name, p.price,
+               p.stock, p.is_active
+        FROM cart_items ci
+        LEFT JOIN products p ON p.id = ci.product_id
+        WHERE ci.account_id = ${accountId}
+        FOR UPDATE OF ci
+      ),
+      locked_products AS MATERIALIZED (
+        SELECT p.id, p.stock, p.is_active
+        FROM products p
+        JOIN cart c ON c.product_id = p.id
+        ORDER BY p.id
+        FOR UPDATE OF p
+      ),
+      availability AS MATERIALIZED (
+        SELECT COUNT(*)::int AS cart_count,
+               COUNT(lp.id)::int AS product_count,
+               COALESCE(
+                 BOOL_AND(lp.is_active AND lp.stock IS NOT NULL AND lp.stock >= c.quantity),
+                 FALSE
+               ) AS available,
+               COALESCE(SUM(c.quantity * c.price), 0)::numeric AS total
+        FROM cart c
+        LEFT JOIN locked_products lp ON lp.id = c.product_id
+      ),
+      reserved AS (
+        UPDATE products p
+        SET stock = p.stock - c.quantity, updated_at = NOW()
+        FROM cart c, availability a
+        WHERE p.id = c.product_id
+          AND a.cart_count > 0
+          AND a.cart_count = a.product_count
+          AND a.available
+          AND p.is_active = TRUE
+          AND p.stock >= c.quantity
+        RETURNING p.id
+      ),
+      created AS (
+        INSERT INTO orders (id, account_id, shipping_address, status, total)
+        SELECT ${orderId}, ${accountId}, ${accountRecord.address}, 'pending', a.total
+        FROM availability a
+        WHERE a.cart_count > 0
+          AND a.cart_count = a.product_count
+          AND a.available
+          AND (SELECT COUNT(*) FROM reserved) = a.cart_count
+        RETURNING id, status, total, created_at
+      ),
+      saved_items AS (
+        INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity)
+        SELECT created.id, c.product_id, c.product_name, c.price, c.quantity
+        FROM created
+        CROSS JOIN cart c
+        RETURNING order_id
+      ),
+      cleared_cart AS (
+        DELETE FROM cart_items ci
+        WHERE ci.account_id = ${accountId}
+          AND EXISTS (SELECT 1 FROM created)
+        RETURNING ci.product_id
+      )
+      SELECT a.cart_count, a.product_count, a.available,
+             created.id, created.status, created.total::float8 AS total,
+             created.created_at
+      FROM availability a
+      LEFT JOIN created ON TRUE
+    `;
+
+    if (!result || result.cart_count === 0) {
+      return sendJson(res, 400, { error: 'Your cart is empty.' });
+    }
+    if (!result.id) {
+      return sendJson(res, 409, {
+        error: 'One or more items are unavailable or no longer have enough stock. Review your cart and try again.'
+      });
+    }
+
+    await recordActivity(sql, 'created', 'order', result.id, `New COD order ${result.id}.`);
+    return sendJson(res, 201, {
+      order: {
+        id: result.id,
+        status: result.status,
+        total: result.total,
+        created_at: result.created_at
+      }
+    });
+  } catch (error) {
+    return databaseError(res, error, 'placing a customer order');
   }
 }
 
@@ -928,6 +1185,8 @@ module.exports = async function handler(req, res) {
       return accountLogoutHandler(req, res);
     case 'cart':
       return cartHandler(req, res);
+    case 'orders':
+      return ordersHandler(req, res);
     case 'images':
       return imagesHandler(req, res);
     case 'products':
@@ -944,6 +1203,8 @@ module.exports = async function handler(req, res) {
       return adminLogoutHandler(req, res);
     case 'admin/products':
       return adminProductsHandler(req, res);
+    case 'admin/orders':
+      return adminOrdersHandler(req, res);
     case 'admin/posts':
       return adminPostsHandler(req, res);
     case 'admin/dashboard':

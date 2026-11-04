@@ -39,6 +39,7 @@
       <nav class="side-nav" aria-label="Admin sections">
         <button type="button" class="nav-item is-active" data-view="dashboard"><span aria-hidden="true">⌂</span> Overview</button>
         <button type="button" class="nav-item" data-view="products"><span aria-hidden="true">▦</span> Products</button>
+        <button type="button" class="nav-item" data-view="orders"><span aria-hidden="true">▣</span> Orders</button>
         <button type="button" class="nav-item" data-view="posts"><span aria-hidden="true">▤</span> News & posts</button>
         <button type="button" class="nav-item" data-view="images"><span aria-hidden="true">▧</span> Images</button>
         <button type="button" class="nav-item" data-view="settings"><span aria-hidden="true">⚙</span> Site content</button>
@@ -111,6 +112,13 @@
           </table>
         </div>
         <p class="table-count" id="product-count"></p>
+      </section>
+
+      <section class="view-panel" id="view-orders" data-panel="orders" hidden>
+        <div class="page-toolbar">
+          <div><h2>Orders</h2><p>Review COD orders, delivery addresses, and fulfillment status. Cancelling an order restores its stock.</p></div>
+        </div>
+        <div class="order-admin-list" id="orders-list" aria-live="polite"></div>
       </section>
 
       <section class="view-panel" id="view-posts" data-panel="posts" hidden>

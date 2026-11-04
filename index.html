@@ -30,6 +30,7 @@
 <ul><li><a href="#shop">Shop</a></li><li><a href="#coasts">Coasts</a></li><li><a href="#about">Story</a></li><li><a href="#drop">Drop</a></li></ul>
 <div class="nav-actions">
   <button type="button" id="cart-button">Cart <span id="cart-count" aria-label="0 items">0</span></button>
+  <a class="orders-link" href="orders.html">Orders</a>
   <button type="button" id="account-button">Account</button>
 </div>
 </nav>
@@ -171,6 +172,7 @@
     <h2 id="account-modal-title">Welcome back.</h2>
     <div id="account-signed-in" hidden>
       <p id="account-details"></p>
+      <a class="account-orders-link" href="orders.html">View my orders</a>
       <button class="account-submit" id="sign-out-button" type="button">Sign out</button>
     </div>
     <div id="account-auth">
@@ -200,7 +202,10 @@
     <h2 id="cart-title">Shopping cart</h2>
     <div class="cart-items" id="cart-items"></div>
     <div class="cart-total"><span>Total</span><strong id="cart-total">₱0</strong></div>
-    <p class="cart-note">Checkout is not available yet. Your cart is saved to your account.</p>
+    <p class="cart-note">Cash on delivery. Payment is due when your order arrives.</p>
+    <p class="cart-address">Delivering to: <span id="cart-address"></span></p>
+    <p class="cart-order-status" id="cart-order-status" role="status" aria-live="polite"></p>
+    <button class="cart-checkout" type="button" id="place-order-button">Place COD order</button>
   </div>
 </dialog>
 

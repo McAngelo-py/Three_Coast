@@ -21,6 +21,7 @@ var productRemoveImage = document.getElementById('product-remove-image');
 var postRemoveImage = document.getElementById('post-remove-image');
 var settingsForm = document.getElementById('settings-form');
 var products = [];
+var orders = [];
 var posts = [];
 var currentSettings = {};
 var editingProduct = null;
@@ -46,6 +47,7 @@ function productCategoryLabel(category) {
 var viewTitles = {
   dashboard: 'Overview',
   products: 'Products',
+  orders: 'Orders',
   posts: 'News & posts',
   images: 'Site images',
   settings: 'Site content'
@@ -363,6 +365,90 @@ function renderPosts() {
   });
 }
 
+function allowedOrderStatuses(status) {
+  return {
+    pending: ['processing', 'shipped', 'cancelled'],
+    processing: ['shipped', 'cancelled'],
+    shipped: ['delivered'],
+    delivered: [],
+    cancelled: []
+  }[status] || [];
+}
+
+function renderOrders() {
+  var list = document.getElementById('orders-list');
+  list.replaceChildren();
+  if (orders.length === 0) {
+    appendText(list, 'p', 'empty-state', 'No customer orders yet.');
+    return;
+  }
+
+  var priceFormatter = new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    maximumFractionDigits: 2
+  });
+  orders.forEach(function (order) {
+    var card = document.createElement('article');
+    card.className = 'order-admin-card';
+
+    var heading = document.createElement('div');
+    heading.className = 'order-admin-heading';
+    var customer = document.createElement('div');
+    appendText(customer, 'h3', '', 'Order ' + order.id.slice(0, 8).toUpperCase());
+    appendText(customer, 'p', '', order.first_name + ' ' + order.last_name + ' · ' + order.phone);
+    heading.appendChild(customer);
+    heading.appendChild(statusPill(
+      order.status,
+      order.status === 'cancelled' ? 'is-draft' : ''
+    ));
+    card.appendChild(heading);
+    appendText(card, 'p', 'order-admin-address', 'Delivery address: ' + order.shipping_address);
+    appendText(card, 'p', 'order-admin-date', 'Placed ' + formatDate(order.created_at) + ' · Cash on delivery');
+
+    var itemList = document.createElement('ul');
+    itemList.className = 'order-admin-items';
+    order.items.forEach(function (item) {
+      var line = document.createElement('li');
+      appendText(line, 'span', '', item.name + ' × ' + item.quantity);
+      appendText(
+        line,
+        'strong',
+        '',
+        priceFormatter.format(Number(item.price) * item.quantity)
+      );
+      itemList.appendChild(line);
+    });
+    card.appendChild(itemList);
+
+    var footer = document.createElement('div');
+    footer.className = 'order-admin-footer';
+    appendText(footer, 'strong', '', 'Total ' + priceFormatter.format(Number(order.total)));
+    var availableStatuses = allowedOrderStatuses(order.status);
+    if (availableStatuses.length > 0) {
+      var controls = document.createElement('div');
+      controls.className = 'order-status-controls';
+      var select = document.createElement('select');
+      select.dataset.orderStatus = order.id;
+      select.setAttribute('aria-label', 'New status for order ' + order.id);
+      availableStatuses.forEach(function (status) {
+        var option = document.createElement('option');
+        option.value = status;
+        option.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        select.appendChild(option);
+      });
+      var update = actionButton('Update status', 'update-order', order.id, false);
+      controls.appendChild(select);
+      controls.appendChild(update);
+      footer.appendChild(controls);
+    } else {
+      appendText(footer, 'span', 'order-final-status', 'Final status');
+    }
+    card.appendChild(footer);
+    list.appendChild(card);
+  });
+}
+
 function setFormFields(form, values) {
   Object.keys(values).forEach(function (key) {
     var field = form.elements.namedItem(key);
@@ -523,17 +609,20 @@ async function refreshAdminContent() {
   var results = await Promise.all([
     requestJson('/api/admin/dashboard', { cache: 'no-store' }),
     requestJson('/api/admin/products', { cache: 'no-store' }),
+    requestJson('/api/admin/orders', { cache: 'no-store' }),
     requestJson('/api/admin/posts', { cache: 'no-store' }),
     requestJson('/api/admin/site-settings', { cache: 'no-store' }),
     loadImages()
   ]);
   products = results[1].products;
-  posts = results[2].posts;
-  currentSettings = results[3].settings;
+  orders = results[2].orders;
+  posts = results[3].posts;
+  currentSettings = results[4].settings;
   renderMetrics(results[0].metrics);
   renderLowStock(results[0].lowStock);
   renderActivity(results[0].activity);
   renderProducts();
+  renderOrders();
   renderPosts();
   setFormFields(settingsForm, currentSettings);
 }
@@ -759,6 +848,40 @@ document.getElementById('products-table').addEventListener('click', async functi
     } finally {
       button.disabled = false;
     }
+  }
+});
+
+document.getElementById('orders-list').addEventListener('click', async function (event) {
+  var button = event.target.closest('button[data-action="update-order"]');
+  if (!button) {
+    return;
+  }
+  var order = orders.find(function (item) {
+    return item.id === button.dataset.id;
+  });
+  var select = button.parentElement.querySelector('select');
+  if (!order || !select) {
+    setStatus('Order status control could not be found. Refresh and try again.', true);
+    return;
+  }
+  var nextStatus = select.value;
+  if (nextStatus === 'cancelled' &&
+      !window.confirm('Cancel this order and restore its items to stock?')) {
+    return;
+  }
+  button.disabled = true;
+  try {
+    await requestJson('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: order.id, status: nextStatus })
+    });
+    await refreshAdminContent();
+    setStatus('Order status updated to ' + nextStatus + '.', false);
+  } catch (error) {
+    setStatus(error.message, true);
+  } finally {
+    button.disabled = false;
   }
 });
 

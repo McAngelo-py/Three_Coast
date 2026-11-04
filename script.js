@@ -128,8 +128,11 @@ function openProductModal(card) {
   productModalStock.textContent = stock && !stock.hidden ? stock.textContent : '';
   productModalStock.hidden = !productModalStock.textContent;
   var addButton = document.getElementById('add-to-cart-button');
-  addButton.disabled = stock && !stock.hidden && stock.textContent === 'Sold out';
-  addButton.textContent = addButton.disabled ? 'Sold out' : 'Add to cart';
+  addButton.disabled = stock && !stock.hidden &&
+    (stock.textContent === 'Sold out' || stock.textContent === 'Stock being updated');
+  addButton.textContent = addButton.disabled
+    ? stock.textContent === 'Sold out' ? 'Sold out' : 'Stock being updated'
+    : 'Add to cart';
   productModal.showModal();
 }
 
@@ -231,6 +234,7 @@ async function refreshCartCount() {
 async function showCart() {
   await refreshCartCount();
   var container = document.getElementById('cart-items');
+  var checkoutButton = document.getElementById('place-order-button');
   container.replaceChildren();
   if (cartItems.length === 0) {
     var empty = document.createElement('p');
@@ -238,6 +242,9 @@ async function showCart() {
     empty.textContent = 'Your cart is empty.';
     container.appendChild(empty);
   }
+  checkoutButton.hidden = cartItems.length === 0;
+  document.getElementById('cart-address').textContent = account ? account.address : '';
+  document.getElementById('cart-order-status').textContent = '';
 
   var total = 0;
   cartItems.forEach(function (item) {
@@ -411,6 +418,27 @@ cartModal.addEventListener('click', function (event) {
   }
 });
 
+document.getElementById('place-order-button').addEventListener('click', async function (event) {
+  var button = event.currentTarget;
+  button.disabled = true;
+  document.getElementById('cart-order-status').textContent = 'Placing your order…';
+  try {
+    var data = await requestJson('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    cartItems = [];
+    document.getElementById('cart-count').textContent = '0';
+    document.getElementById('cart-count').setAttribute('aria-label', '0 items');
+    window.location.href = 'orders.html?placed=' + encodeURIComponent(data.order.id);
+  } catch (error) {
+    document.getElementById('cart-order-status').textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
 if (window.location.protocol !== 'file:') {
   requestJson('/api/account/session', { cache: 'no-store' }).then(function (data) {
     setAccount(data.account);
@@ -563,10 +591,12 @@ if (window.location.protocol !== 'file:') {
             existingImage.alt = product.name;
           }
           var stockState = existingCard.querySelector('.stock-state');
-          if (stockState && product.stock !== null) {
-            stockState.textContent = product.stock === 0
-              ? 'Sold out'
-              : product.stock + ' in stock';
+          if (stockState) {
+            stockState.textContent = product.stock === null
+              ? 'Stock being updated'
+              : product.stock === 0
+                ? 'Sold out'
+                : product.stock + ' in stock';
             stockState.classList.toggle('is-sold-out', product.stock === 0);
             stockState.hidden = false;
           }
@@ -617,12 +647,14 @@ if (window.location.protocol !== 'file:') {
         details.textContent = productCategoryLabel(product.category) + ' · ' + product.description;
         details.className = 'product-description';
         description.appendChild(details);
-        if (product.stock !== null) {
-          var stock = document.createElement('small');
-          stock.className = 'stock-state' + (product.stock === 0 ? ' is-sold-out' : '');
-          stock.textContent = product.stock === 0 ? 'Sold out' : product.stock + ' in stock';
-          description.appendChild(stock);
-        }
+        var stock = document.createElement('small');
+        stock.className = 'stock-state' + (product.stock === 0 ? ' is-sold-out' : '');
+        stock.textContent = product.stock === null
+          ? 'Stock being updated'
+          : product.stock === 0
+            ? 'Sold out'
+            : product.stock + ' in stock';
+        description.appendChild(stock);
 
         var price = document.createElement('span');
         price.className = 'price';
@@ -721,4 +753,9 @@ if (window.location.protocol !== 'file:') {
     .catch(function (error) {
       console.warn('Using the bundled site content:', error.message);
     });
+}
+
+if (new URLSearchParams(window.location.search).get('account') === 'register') {
+  openAccountDialog('');
+  setAuthMode('register');
 }

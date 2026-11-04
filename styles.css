@@ -18,6 +18,8 @@ nav ul{display:flex;gap:22px;list-style:none;margin:0;padding:0;font-weight:500}
 nav a{text-decoration:none}nav ul a:hover{color:var(--gulf)}
 .nav-actions{display:flex;gap:8px}
 .nav-actions button{min-height:40px;padding:8px 14px;border:2px solid var(--paper);background:transparent;color:var(--paper);font:inherit;font-weight:700;cursor:pointer}
+.orders-link{display:inline-flex;min-height:40px;align-items:center;padding:8px 14px;border:2px solid var(--paper);color:var(--paper);font-weight:700;text-decoration:none}
+.orders-link:hover{background:var(--paper);color:var(--ink)}
 .nav-actions button:hover{background:var(--paper);color:var(--ink)}
 #cart-count{display:inline-grid;min-width:22px;height:22px;place-items:center;margin-left:4px;padding:0 5px;border-radius:99px;background:var(--paper);color:var(--ink);font-size:.78rem}
 .hero{position:relative;background:var(--atl);color:var(--paper);padding:48px 24px 0;overflow:hidden;min-height:560px;display:flex;flex-direction:column;justify-content:flex-start}
@@ -118,6 +120,7 @@ section{padding:72px 24px}
 #account-form input{width:100%;min-height:46px;padding:10px;border:2px solid var(--ink);background:#fff;font:inherit}
 #signup-fields[hidden]{display:none}
 #account-form .account-submit,.account-submit{width:100%}
+.account-orders-link{display:block;margin:20px 0 -12px;color:#315b21;font-weight:700}
 .account-status{min-height:1.5em;margin:16px 0 0;color:#8e3024;font-weight:700}
 #account-details{white-space:pre-wrap;overflow-wrap:anywhere}
 .cart-items{display:grid;gap:14px}
@@ -129,6 +132,12 @@ section{padding:72px 24px}
 .cart-empty{padding:24px 0;text-align:center}
 .cart-total{display:flex;justify-content:space-between;gap:16px;margin-top:24px;padding-top:16px;border-top:3px solid var(--ink);font-size:1.1rem}
 .cart-note{margin:16px 0 0}
+.cart-address{margin:10px 0 0;color:#45463f;font-size:.88rem;overflow-wrap:anywhere}
+.cart-address span{font-weight:700}
+.cart-order-status{min-height:1.4em;margin:12px 0 0;color:#8e3024;font-size:.88rem;font-weight:700}
+.cart-checkout{width:100%;min-height:48px;margin-top:8px;padding:12px 20px;border:3px solid var(--ink);background:var(--ink);color:var(--paper);font:inherit;font-weight:700;cursor:pointer}
+.cart-checkout:disabled{opacity:.55;cursor:wait}
+.cart-checkout[hidden]{display:none}
 .first-drop{background:var(--gulf);text-align:center;border-bottom:3px solid var(--ink)}
 .first-drop h2{font-size:clamp(3rem,10vw,8rem)}
 .first-drop p{font-family:var(--d);font-size:clamp(1.5rem,4vw,3rem);margin:20px 0 0;text-transform:uppercase}
@@ -176,6 +185,7 @@ nav ul{display:grid;width:100%;grid-template-columns:repeat(4,minmax(0,1fr));gap
 nav ul a{display:flex;min-height:44px;align-items:center;justify-content:center;padding:6px 3px}
 .nav-actions{justify-content:center}
 .nav-actions button{min-height:40px;padding:6px 12px;font-size:.85rem}
+.nav-actions .orders-link{min-height:40px;padding:6px 12px;font-size:.85rem}
 .hero{min-height:clamp(420px,calc(100svh - 110px),620px);padding:clamp(26px,6vh,36px) 18px 0}
 .hero h1{font-size:clamp(4rem,22vw,9rem)}
 .hero h1 .l2{margin-left:3vw}
