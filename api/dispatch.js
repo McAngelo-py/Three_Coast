@@ -909,7 +909,7 @@ async function imagesHandler(req, res) {
 
 module.exports = async function handler(req, res) {
   const requestUrl = new URL(req.url || '/', 'http://localhost');
-  const queryRoute = (req.query && req.query.route) || requestUrl.searchParams.get('route');
+  const queryRoute = (req.query && req.query.target) || requestUrl.searchParams.get('target');
   const route = Array.isArray(queryRoute)
     ? queryRoute
     : typeof queryRoute === 'string'
