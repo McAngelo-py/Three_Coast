@@ -65,6 +65,40 @@ function productCategoryLabel(category) {
   }[category] || category;
 }
 
+var mainNavigation = document.querySelector('nav');
+var mobileNavigationToggle = document.querySelector('.mobile-nav-toggle');
+
+function closeMobileNavigation() {
+  mainNavigation.classList.remove('is-open');
+  mobileNavigationToggle.setAttribute('aria-expanded', 'false');
+  mobileNavigationToggle.setAttribute('aria-label', 'Open navigation menu');
+}
+
+mobileNavigationToggle.addEventListener('click', function () {
+  var isOpen = mainNavigation.classList.toggle('is-open');
+  mobileNavigationToggle.setAttribute('aria-expanded', String(isOpen));
+  mobileNavigationToggle.setAttribute(
+    'aria-label',
+    isOpen ? 'Close navigation menu' : 'Open navigation menu'
+  );
+});
+
+document.querySelectorAll('#nav-menu a').forEach(function (link) {
+  link.addEventListener('click', closeMobileNavigation);
+});
+
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape') {
+    closeMobileNavigation();
+  }
+});
+
+window.matchMedia('(min-width: 761px)').addEventListener('change', function (event) {
+  if (event.matches) {
+    closeMobileNavigation();
+  }
+});
+
 document.querySelectorAll('.filters button').forEach(function (b) {
   b.addEventListener('click', function () {
     document.querySelectorAll('.filters button').forEach(function (x) {

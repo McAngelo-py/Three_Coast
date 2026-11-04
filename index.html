@@ -27,11 +27,16 @@
   <img src="images/logo.jpg" alt="Three Coast logo">
   <span>Three Coast</span>
 </a>
-<ul><li><a href="#shop">Shop</a></li><li><a href="#coasts">Coasts</a></li><li><a href="#about">Story</a></li><li><a href="#drop">Drop</a></li></ul>
-<div class="nav-actions">
-  <button type="button" id="cart-button">Cart <span id="cart-count" aria-label="0 items">0</span></button>
-  <a class="orders-link" href="orders.html">Orders</a>
-  <button type="button" id="account-button">Account</button>
+<button class="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open navigation menu">
+  <span></span><span></span><span></span>
+</button>
+<div class="nav-menu" id="nav-menu">
+  <ul><li><a href="#shop">Shop</a></li><li><a href="#coasts">Coasts</a></li><li><a href="#about">Story</a></li><li><a href="#drop">Drop</a></li></ul>
+  <div class="nav-actions">
+    <button type="button" id="cart-button">Cart <span id="cart-count" aria-label="0 items">0</span></button>
+    <a class="orders-link" href="orders.html">Orders</a>
+    <button type="button" id="account-button">Account</button>
+  </div>
 </div>
 </nav>
 
