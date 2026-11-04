@@ -22,6 +22,7 @@ var postRemoveImage = document.getElementById('post-remove-image');
 var settingsForm = document.getElementById('settings-form');
 var products = [];
 var orders = [];
+var orderStatusFilter = 'all';
 var posts = [];
 var currentSettings = {};
 var editingProduct = null;
@@ -378,8 +379,47 @@ function allowedOrderStatuses(status) {
 function renderOrders() {
   var list = document.getElementById('orders-list');
   list.replaceChildren();
+  var statusCounts = { all: orders.length };
+  orders.forEach(function (order) {
+    statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+  });
+  document.querySelectorAll('[data-order-status-filter]').forEach(function (button) {
+    var status = button.dataset.orderStatusFilter;
+    var count = statusCounts[status] || 0;
+    button.classList.toggle('is-active', status === orderStatusFilter);
+    button.setAttribute('aria-pressed', status === orderStatusFilter ? 'true' : 'false');
+    button.querySelector('[data-order-status-count]').textContent = String(count);
+  });
+
   if (orders.length === 0) {
     appendText(list, 'p', 'empty-state', 'No customer orders yet.');
+    document.getElementById('order-count').textContent = '0 orders';
+    return;
+  }
+  var query = document.getElementById('order-search').value.trim().toLowerCase();
+  var query = document.getElementById('order-search').value.trim().toLowerCase();
+  var sortOrder = document.getElementById('order-sort').value;
+  var visibleOrders = orders.filter(function (order) {
+    var matchesStatus = orderStatusFilter === 'all' || order.status === orderStatusFilter;
+    var searchable = [
+      order.id,
+      order.first_name,
+      order.last_name,
+      order.phone,
+      order.shipping_address,
+      order.status,
+      order.items.map(function (item) { return item.name; }).join(' ')
+    ].join(' ').toLowerCase();
+    return matchesStatus && (!query || searchable.includes(query));
+  }).sort(function (first, second) {
+    var difference = new Date(first.created_at).getTime() - new Date(second.created_at).getTime();
+    return sortOrder === 'oldest' ? difference : -difference;
+  });
+
+  if (visibleOrders.length === 0) {
+    appendText(list, 'p', 'empty-state', 'No orders match your filters.');
+    document.getElementById('order-count').textContent =
+      'Showing 0 of ' + orders.length + ' orders';
     return;
   }
 
@@ -388,7 +428,7 @@ function renderOrders() {
     currency: 'PHP',
     maximumFractionDigits: 2
   });
-  orders.forEach(function (order) {
+  visibleOrders.forEach(function (order) {
     var card = document.createElement('article');
     card.className = 'order-admin-card';
 
@@ -447,6 +487,8 @@ function renderOrders() {
     card.appendChild(footer);
     list.appendChild(card);
   });
+  document.getElementById('order-count').textContent =
+    'Showing ' + visibleOrders.length + ' of ' + orders.length + ' orders';
 }
 
 function setFormFields(form, values) {
@@ -924,6 +966,14 @@ document.getElementById('posts-list').addEventListener('click', async function (
 
 document.getElementById('product-search').addEventListener('input', renderProducts);
 document.getElementById('product-filter').addEventListener('change', renderProducts);
+document.getElementById('order-search').addEventListener('input', renderOrders);
+document.querySelectorAll('[data-order-status-filter]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    orderStatusFilter = button.dataset.orderStatusFilter;
+    renderOrders();
+  });
+});
+document.getElementById('order-sort').addEventListener('change', renderOrders);
 document.getElementById('post-search').addEventListener('input', renderPosts);
 document.getElementById('post-filter').addEventListener('change', renderPosts);
 slotSelect.addEventListener('change', updateSiteImagePreview);

@@ -1259,6 +1259,56 @@ tbody tr:last-child td {
   gap: 14px;
 }
 
+.order-stage-filters {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 16px;
+  overflow-x: auto;
+  padding: 2px 0 6px;
+  scrollbar-width: thin;
+}
+
+.order-stage-filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.order-stage-filters button.is-active {
+  border-color: var(--green);
+  background: var(--green);
+  color: #151812;
+  font-weight: 700;
+}
+
+.order-stage-filters button span {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 12%);
+  font-size: 0.7rem;
+}
+
+.order-filter-toolbar .search-field {
+  min-width: 240px;
+}
+
+.order-filter-toolbar select {
+  min-width: 145px;
+}
+
 .order-admin-card {
   display: grid;
   gap: 14px;
@@ -1347,6 +1397,16 @@ tbody tr:last-child td {
 }
 
 @media (max-width: 480px) {
+  .order-filter-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .order-filter-toolbar .search-field {
+    width: 100%;
+    min-width: 0;
+  }
+
   .order-admin-heading {
     flex-direction: column;
   }

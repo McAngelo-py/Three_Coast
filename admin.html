@@ -116,9 +116,25 @@
 
       <section class="view-panel" id="view-orders" data-panel="orders" hidden>
         <div class="page-toolbar">
-          <div><h2>Orders</h2><p>Review COD orders, delivery addresses, and fulfillment status. Cancelling an order restores its stock.</p></div>
+          <div><h2>Orders</h2><p>Filter orders by fulfillment stage, then update each order as it moves from pending to delivery. Cancelling restores stock.</p></div>
+        </div>
+        <div class="order-stage-filters" id="order-stage-filters" role="group" aria-label="Filter orders by fulfillment stage">
+          <button type="button" class="is-active" data-order-status-filter="all" aria-pressed="true">All <span data-order-status-count="all">0</span></button>
+          <button type="button" data-order-status-filter="pending" aria-pressed="false">Pending <span data-order-status-count="pending">0</span></button>
+          <button type="button" data-order-status-filter="processing" aria-pressed="false">Processing <span data-order-status-count="processing">0</span></button>
+          <button type="button" data-order-status-filter="shipped" aria-pressed="false">Shipped <span data-order-status-count="shipped">0</span></button>
+          <button type="button" data-order-status-filter="delivered" aria-pressed="false">Delivered <span data-order-status-count="delivered">0</span></button>
+          <button type="button" data-order-status-filter="cancelled" aria-pressed="false">Cancelled <span data-order-status-count="cancelled">0</span></button>
+        </div>
+        <div class="table-toolbar order-filter-toolbar">
+          <label class="search-field"><span aria-hidden="true">⌕</span><input id="order-search" type="search" placeholder="Search order, customer, address, or item" aria-label="Search orders"></label>
+          <select id="order-sort" aria-label="Sort orders">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
         </div>
         <div class="order-admin-list" id="orders-list" aria-live="polite"></div>
+        <p class="table-count" id="order-count" aria-live="polite"></p>
       </section>
 
       <section class="view-panel" id="view-posts" data-panel="posts" hidden>
