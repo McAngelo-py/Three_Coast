@@ -1,5 +1,24 @@
 {
   "version": 2,
   "framework": null,
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/account/login", "destination": "/api/dispatch?route=account/login" },
+    { "source": "/api/account/register", "destination": "/api/dispatch?route=account/register" },
+    { "source": "/api/account/session", "destination": "/api/dispatch?route=account/session" },
+    { "source": "/api/account/logout", "destination": "/api/dispatch?route=account/logout" },
+    { "source": "/api/cart", "destination": "/api/dispatch?route=cart" },
+    { "source": "/api/images", "destination": "/api/dispatch?route=images" },
+    { "source": "/api/products", "destination": "/api/dispatch?route=products" },
+    { "source": "/api/posts", "destination": "/api/dispatch?route=posts" },
+    { "source": "/api/site-settings", "destination": "/api/dispatch?route=site-settings" },
+    { "source": "/api/admin/login", "destination": "/api/dispatch?route=admin/login" },
+    { "source": "/api/admin/session", "destination": "/api/dispatch?route=admin/session" },
+    { "source": "/api/admin/logout", "destination": "/api/dispatch?route=admin/logout" },
+    { "source": "/api/admin/products", "destination": "/api/dispatch?route=admin/products" },
+    { "source": "/api/admin/posts", "destination": "/api/dispatch?route=admin/posts" },
+    { "source": "/api/admin/dashboard", "destination": "/api/dispatch?route=admin/dashboard" },
+    { "source": "/api/admin/site-settings", "destination": "/api/dispatch?route=admin/site-settings" },
+    { "source": "/api/admin/sign-upload", "destination": "/api/dispatch?route=admin/sign-upload" }
+  ]
 }

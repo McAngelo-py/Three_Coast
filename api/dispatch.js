@@ -909,8 +909,13 @@ async function imagesHandler(req, res) {
 
 module.exports = async function handler(req, res) {
   const requestUrl = new URL(req.url || '/', 'http://localhost');
-  const route = requestUrl.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
-  const routeKey = route.join('/');
+  const queryRoute = (req.query && req.query.route) || requestUrl.searchParams.get('route');
+  const route = Array.isArray(queryRoute)
+    ? queryRoute
+    : typeof queryRoute === 'string'
+      ? queryRoute.split('/')
+      : requestUrl.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
+  const routeKey = route.filter(Boolean).join('/');
 
   switch (routeKey) {
     case 'account/login':
