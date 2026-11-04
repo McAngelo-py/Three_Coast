@@ -7,6 +7,30 @@ function hideLoadingScreen() {
   }, 500);
 }
 
+var phpFormatter = new Intl.NumberFormat('en-PH', {
+  style: 'currency',
+  currency: 'PHP',
+  maximumFractionDigits: 2
+});
+
+function formatPrice(amount) {
+  return phpFormatter.format(Number(amount));
+}
+
+async function requestJson(url, options) {
+  var response = await fetch(url, options);
+  var data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error('The server returned an invalid response.');
+  }
+  if (!response.ok) {
+    throw new Error(data.error || 'The request could not be completed.');
+  }
+  return data;
+}
+
 if (document.readyState === 'complete') {
   hideLoadingScreen();
 } else {
@@ -70,6 +94,7 @@ var productModalCategory = document.getElementById('product-modal-category');
 var productModalDescription = document.getElementById('product-modal-description');
 var productModalPrice = document.getElementById('product-modal-price');
 var productModalStock = document.getElementById('product-modal-stock');
+var currentProductId = null;
 
 function openProductModal(card) {
   var title = card.querySelector('h3');
@@ -97,10 +122,14 @@ function openProductModal(card) {
   productModalDescription.textContent = description
     ? description.textContent.replace(/^[^·]+·\s*/, '')
     : '';
+  currentProductId = card.dataset.productId;
   var price = card.querySelector('.price');
   productModalPrice.textContent = price ? price.textContent : '';
   productModalStock.textContent = stock && !stock.hidden ? stock.textContent : '';
   productModalStock.hidden = !productModalStock.textContent;
+  var addButton = document.getElementById('add-to-cart-button');
+  addButton.disabled = stock && !stock.hidden && stock.textContent === 'Sold out';
+  addButton.textContent = addButton.disabled ? 'Sold out' : 'Add to cart';
   productModal.showModal();
 }
 
@@ -128,6 +157,271 @@ productModal.addEventListener('click', function (event) {
     productModal.close();
   }
 });
+
+var accountModal = document.getElementById('account-modal');
+var accountForm = document.getElementById('account-form');
+var accountStatus = document.getElementById('account-status');
+var account = null;
+var authMode = 'login';
+var pendingProductId = null;
+var openCartAfterAuthentication = false;
+var cartModal = document.getElementById('cart-modal');
+var cartItems = [];
+
+function setAccount(value) {
+  account = value || null;
+  var accountButton = document.getElementById('account-button');
+  accountButton.textContent = account ? account.first_name : 'Account';
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  var signupFields = document.getElementById('signup-fields');
+  var signupInputs = signupFields.querySelectorAll('input');
+  signupFields.hidden = mode !== 'register';
+  signupInputs.forEach(function (input) {
+    input.disabled = mode !== 'register';
+  });
+  var passwordInput = accountForm.elements.password;
+  passwordInput.autocomplete = mode === 'register' ? 'new-password' : 'current-password';
+  document.querySelectorAll('[data-auth-mode]').forEach(function (button) {
+    var selected = button.dataset.authMode === mode;
+    button.classList.toggle('is-selected', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  document.getElementById('account-submit').textContent =
+    mode === 'register' ? 'Create account' : 'Sign in';
+  document.getElementById('account-modal-title').textContent =
+    mode === 'register' ? 'Join the crew.' : 'Welcome back.';
+  accountStatus.textContent = '';
+}
+
+function openAccountDialog(message) {
+  document.getElementById('account-signed-in').hidden = Boolean(account);
+  document.getElementById('account-auth').hidden = Boolean(account);
+  if (account) {
+    document.getElementById('account-modal-title').textContent = 'Your account.';
+    document.getElementById('account-details').textContent =
+      account.first_name + ' ' + account.last_name + ' · ' + account.phone;
+  } else {
+    setAuthMode('login');
+    accountForm.reset();
+  }
+  accountStatus.textContent = message || '';
+  if (!accountModal.open) {
+    accountModal.showModal();
+  }
+}
+
+async function refreshCartCount() {
+  if (!account || window.location.protocol === 'file:') {
+    document.getElementById('cart-count').textContent = '0';
+    document.getElementById('cart-count').setAttribute('aria-label', '0 items');
+    return;
+  }
+  var data = await requestJson('/api/cart', { cache: 'no-store' });
+  cartItems = data.items;
+  var count = cartItems.reduce(function (total, item) {
+    return total + item.quantity;
+  }, 0);
+  document.getElementById('cart-count').textContent = String(count);
+  document.getElementById('cart-count').setAttribute('aria-label', count + ' items');
+}
+
+async function showCart() {
+  await refreshCartCount();
+  var container = document.getElementById('cart-items');
+  container.replaceChildren();
+  if (cartItems.length === 0) {
+    var empty = document.createElement('p');
+    empty.className = 'cart-empty';
+    empty.textContent = 'Your cart is empty.';
+    container.appendChild(empty);
+  }
+
+  var total = 0;
+  cartItems.forEach(function (item) {
+    total += Number(item.price) * item.quantity;
+    var row = document.createElement('article');
+    row.className = 'cart-item';
+    if (item.image_url) {
+      var image = document.createElement('img');
+      image.src = item.image_url;
+      image.alt = '';
+      row.appendChild(image);
+    }
+    var details = document.createElement('div');
+    var title = document.createElement('strong');
+    title.textContent = item.name;
+    var quantity = document.createElement('span');
+    quantity.textContent = 'Qty ' + item.quantity + ' · ' + formatPrice(item.price);
+    details.appendChild(title);
+    details.appendChild(quantity);
+    var remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'cart-remove';
+    remove.dataset.removeProduct = item.product_id;
+    remove.textContent = 'Remove';
+    row.appendChild(details);
+    row.appendChild(remove);
+    container.appendChild(row);
+  });
+  document.getElementById('cart-total').textContent = formatPrice(total);
+  if (!cartModal.open) {
+    cartModal.showModal();
+  }
+}
+
+async function addToCart(productId) {
+  if (!account) {
+    pendingProductId = productId;
+    openCartAfterAuthentication = false;
+    openAccountDialog('Sign in or create an account to add items to your cart.');
+    return;
+  }
+  await requestJson('/api/cart', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productId: productId })
+  });
+  await refreshCartCount();
+  await showCart();
+}
+
+document.getElementById('add-to-cart-button').addEventListener('click', function () {
+  if (!currentProductId) {
+    return;
+  }
+  addToCart(currentProductId).catch(function (error) {
+    openAccountDialog(error.message);
+  });
+});
+
+document.getElementById('cart-button').addEventListener('click', function () {
+  if (!account) {
+    pendingProductId = null;
+    openCartAfterAuthentication = true;
+    openAccountDialog('Sign in or create an account to view your cart.');
+    return;
+  }
+  showCart().catch(function (error) {
+    openAccountDialog(error.message);
+  });
+});
+
+document.getElementById('account-button').addEventListener('click', function () {
+  pendingProductId = null;
+  openCartAfterAuthentication = false;
+  openAccountDialog('');
+});
+
+document.querySelectorAll('[data-auth-mode]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    setAuthMode(button.dataset.authMode);
+  });
+});
+
+document.querySelector('[data-close-account]').addEventListener('click', function () {
+  accountModal.close();
+});
+
+accountModal.addEventListener('click', function (event) {
+  if (event.target === accountModal) {
+    accountModal.close();
+  }
+});
+
+accountForm.addEventListener('submit', function (event) {
+  event.preventDefault();
+  var formData = new FormData(accountForm);
+  var body = {
+    phone: formData.get('phone'),
+    password: formData.get('password')
+  };
+  if (authMode === 'register') {
+    body.firstName = formData.get('firstName');
+    body.lastName = formData.get('lastName');
+    body.address = formData.get('address');
+  }
+
+  var submitButton = document.getElementById('account-submit');
+  submitButton.disabled = true;
+  accountStatus.textContent = 'Please wait…';
+  requestJson('/api/account/' + (authMode === 'register' ? 'register' : 'login'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(async function (data) {
+    setAccount(data.account);
+    accountModal.close();
+    if (pendingProductId) {
+      var productId = pendingProductId;
+      pendingProductId = null;
+      await requestJson('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: productId })
+      });
+      await showCart();
+    } else if (openCartAfterAuthentication) {
+      openCartAfterAuthentication = false;
+      await showCart();
+    }
+  }).catch(function (error) {
+    accountStatus.textContent = error.message;
+  }).finally(function () {
+    submitButton.disabled = false;
+  });
+});
+
+document.getElementById('sign-out-button').addEventListener('click', function () {
+  requestJson('/api/account/logout', { method: 'POST' }).then(function () {
+    setAccount(null);
+    accountModal.close();
+    cartItems = [];
+    document.getElementById('cart-count').textContent = '0';
+  }).catch(function (error) {
+    accountStatus.textContent = error.message;
+  });
+});
+
+document.getElementById('cart-items').addEventListener('click', function (event) {
+  var removeButton = event.target.closest('[data-remove-product]');
+  if (!removeButton) {
+    return;
+  }
+  removeButton.disabled = true;
+  requestJson('/api/cart', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productId: removeButton.dataset.removeProduct })
+  }).then(showCart).catch(function (error) {
+    removeButton.disabled = false;
+    document.getElementById('cart-items').textContent = error.message;
+  });
+});
+
+document.querySelector('[data-close-cart]').addEventListener('click', function () {
+  cartModal.close();
+});
+
+cartModal.addEventListener('click', function (event) {
+  if (event.target === cartModal) {
+    cartModal.close();
+  }
+});
+
+if (window.location.protocol !== 'file:') {
+  requestJson('/api/account/session', { cache: 'no-store' }).then(function (data) {
+    setAccount(data.account);
+    return refreshCartCount();
+  }).catch(function (error) {
+    if (!/401|Sign in/.test(error.message)) {
+      console.warn('Customer account session could not be loaded:', error.message);
+    }
+    setAccount(null);
+  });
+}
 
 document.querySelectorAll('.coast-product').forEach(function (product) {
   product.addEventListener('click', function () {
@@ -255,7 +549,7 @@ if (window.location.protocol !== 'file:') {
               productCategoryLabel(product.category) + ' · ' + product.description;
           }
           if (productPrice) {
-            productPrice.textContent = '$' + Number(product.price).toFixed(2);
+            productPrice.textContent = formatPrice(product.price);
           }
           var artwork = existingCard.querySelector('.art');
           if (artwork && product.image_url) {
@@ -332,7 +626,7 @@ if (window.location.protocol !== 'file:') {
 
         var price = document.createElement('span');
         price.className = 'price';
-        price.textContent = '$' + Number(product.price).toFixed(2);
+        price.textContent = formatPrice(product.price);
         info.appendChild(description);
         info.appendChild(price);
         card.appendChild(artwork);

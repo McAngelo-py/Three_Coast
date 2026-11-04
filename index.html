@@ -28,6 +28,10 @@
   <span>Three Coast</span>
 </a>
 <ul><li><a href="#shop">Shop</a></li><li><a href="#coasts">Coasts</a></li><li><a href="#about">Story</a></li><li><a href="#drop">Drop</a></li></ul>
+<div class="nav-actions">
+  <button type="button" id="cart-button">Cart <span id="cart-count" aria-label="0 items">0</span></button>
+  <button type="button" id="account-button">Account</button>
+</div>
 </nav>
 
 <header class="hero" id="top">
@@ -60,12 +64,12 @@
 </div>
 </div>
 <div class="grid">
-<article class="card" data-category="t-shirts" data-product-id="seed-tide-line" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Tide Line Tee</h3><small class="product-description">T-shirts · Boxy fit</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
-<article class="card" data-category="hoodies" data-product-id="seed-subway-hoodie" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Subway Hoodie</h3><small class="product-description">Hoodies · 480gsm</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
-<article class="card" data-category="headwear" data-product-id="seed-bayou-cap" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#cap"/></svg></div><div class="info"><div><h3>Bayou Cap</h3><small class="product-description">Headwear · Washed twill</small><small class="stock-state" hidden></small></div><span class="price">$38</span></div></article>
-<article class="card" data-category="t-shirts" data-product-id="seed-late-train" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Late Train Tee</h3><small class="product-description">T-shirts · Oversized</small><small class="stock-state" hidden></small></div><span class="price">$48</span></div></article>
-<article class="card" data-category="pants" data-product-id="seed-pier-cargo" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#pants"/></svg></div><div class="info"><div><h3>Pier Cargo Pant</h3><small class="product-description">Pants · Wide leg</small><small class="stock-state" hidden></small></div><span class="price">$110</span></div></article>
-<article class="card" data-category="hoodies" data-product-id="seed-humidity-hoodie" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Humidity Hoodie</h3><small class="product-description">Hoodies · Cropped</small><small class="stock-state" hidden></small></div><span class="price">$95</span></div></article>
+<article class="card" data-category="t-shirts" data-product-id="seed-tide-line" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Tide Line Tee</h3><small class="product-description">T-shirts · Boxy fit</small><small class="stock-state" hidden></small></div><span class="price">₱2,736</span></div></article>
+<article class="card" data-category="hoodies" data-product-id="seed-subway-hoodie" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Subway Hoodie</h3><small class="product-description">Hoodies · 480gsm</small><small class="stock-state" hidden></small></div><span class="price">₱5,415</span></div></article>
+<article class="card" data-category="headwear" data-product-id="seed-bayou-cap" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#cap"/></svg></div><div class="info"><div><h3>Bayou Cap</h3><small class="product-description">Headwear · Washed twill</small><small class="stock-state" hidden></small></div><span class="price">₱2,166</span></div></article>
+<article class="card" data-category="t-shirts" data-product-id="seed-late-train" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#tee"/></svg></div><div class="info"><div><h3>Late Train Tee</h3><small class="product-description">T-shirts · Oversized</small><small class="stock-state" hidden></small></div><span class="price">₱2,736</span></div></article>
+<article class="card" data-category="pants" data-product-id="seed-pier-cargo" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#pants"/></svg></div><div class="info"><div><h3>Pier Cargo Pant</h3><small class="product-description">Pants · Wide leg</small><small class="stock-state" hidden></small></div><span class="price">₱6,270</span></div></article>
+<article class="card" data-category="hoodies" data-product-id="seed-humidity-hoodie" tabindex="0" role="button" aria-haspopup="dialog"><div class="art"><svg><use href="#hood"/></svg></div><div class="info"><div><h3>Humidity Hoodie</h3><small class="product-description">Hoodies · Cropped</small><small class="stock-state" hidden></small></div><span class="price">₱5,415</span></div></article>
 </div>
 <p class="category-empty-state" id="category-empty-state" role="status" hidden></p>
 </section>
@@ -156,6 +160,47 @@
       <strong id="product-modal-price"></strong>
       <span id="product-modal-stock"></span>
     </div>
+    <button class="add-to-cart-button" type="button" id="add-to-cart-button">Add to cart</button>
+  </div>
+</dialog>
+
+<dialog class="account-modal" id="account-modal" aria-labelledby="account-modal-title">
+  <button class="shirt-modal-close" type="button" data-close-account aria-label="Close account">×</button>
+  <div class="account-modal-content">
+    <p class="account-eyebrow">Three Coast account</p>
+    <h2 id="account-modal-title">Welcome back.</h2>
+    <div id="account-signed-in" hidden>
+      <p id="account-details"></p>
+      <button class="account-submit" id="sign-out-button" type="button">Sign out</button>
+    </div>
+    <div id="account-auth">
+      <div class="account-tabs" role="group" aria-label="Account action">
+        <button type="button" class="is-selected" data-auth-mode="login" aria-pressed="true">Sign in</button>
+        <button type="button" data-auth-mode="register" aria-pressed="false">Create account</button>
+      </div>
+      <form id="account-form">
+        <div id="signup-fields" hidden>
+          <label>First name<input name="firstName" autocomplete="given-name" maxlength="60" required disabled></label>
+          <label>Last name<input name="lastName" autocomplete="family-name" maxlength="60" required disabled></label>
+          <label>Address<input name="address" autocomplete="street-address" minlength="5" maxlength="300" required disabled></label>
+        </div>
+        <label>Phone number<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required></label>
+        <button class="account-submit" id="account-submit" type="submit">Sign in</button>
+      </form>
+    </div>
+    <p class="account-status" id="account-status" role="status" aria-live="polite"></p>
+  </div>
+</dialog>
+
+<dialog class="cart-modal" id="cart-modal" aria-labelledby="cart-title">
+  <button class="shirt-modal-close" type="button" data-close-cart aria-label="Close cart">×</button>
+  <div class="cart-content">
+    <p class="account-eyebrow">Your selection</p>
+    <h2 id="cart-title">Shopping cart</h2>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-total"><span>Total</span><strong id="cart-total">₱0</strong></div>
+    <p class="cart-note">Checkout is not available yet. Your cart is saved to your account.</p>
   </div>
 </dialog>
 

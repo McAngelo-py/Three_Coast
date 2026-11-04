@@ -21,6 +21,8 @@ The Google Fonts used by the page load from the internet. The page and local ima
 
 - Filter the product cards by category using the buttons in the Season 01 section.
 - Hover over or focus a coast panel to reveal its shirt; select it to open a larger preview. On small screens, the shirt previews remain visible.
+- Product prices are shown in Philippine pesos. Existing USD catalog prices are converted once at ₱57 per USD; future prices entered in the admin dashboard are PHP.
+- Add products to an account-backed cart. Signing in uses a phone number and password; account creation also collects first name, last name, and address. Passwords are hashed on the server and account sessions use secure, HTTP-only cookies.
 - Submit an email in the Drop section to see a confirmation message. This is a front-end demonstration and does not send or store email addresses.
 - Use the footer’s “Back to top” link to return to the page start.
 
@@ -43,12 +45,13 @@ Products and posts are stored in Neon Postgres. Products use T-shirts, Hoodies, 
    - `CLOUDINARY_API_SECRET`
    - `ADMIN_PASSWORD` — use a strong password of at least 12 characters
    - `ADMIN_SESSION_SECRET` — use a random secret of at least 32 characters
+   - `ACCOUNT_SESSION_SECRET` — use a separate random secret of at least 32 characters for customer account sessions
 4. Create a Neon Postgres project and add its pooled connection string as `DATABASE_URL`. Use the connection string from Neon’s dashboard; keep it private.
 5. Redeploy after adding the variables, then open `https://your-domain/admin.html`.
 
 The upload API signs requests on the server and requires the admin password; Cloudinary secrets are never sent to the browser. Site image uploads overwrite fixed Cloudinary public IDs and request CDN invalidation; product/post images receive unique IDs. Uploads accept JPG, PNG, WebP, or AVIF images up to 10 MB.
 The images API checks fixed site-image delivery URLs before returning them, so images that have not been uploaded use the bundled local files. The check does not require Cloudinary Admin API permissions. If Cloudinary cannot be reached, the admin dashboard continues to load and shows local previews with an image-specific warning.
 
-Product stock is managed manually and shown on the storefront; this does not add checkout or automatically decrement stock. Published posts are shown on the storefront; drafts are admin-only. For local development with serverless API routes, use the Vercel CLI (`vercel dev`) and set the same environment variables locally.
+Product stock is managed manually and shown on the storefront; this does not add checkout or automatically decrement stock. Customer accounts and their carts are stored in Neon; creating accounts requires `DATABASE_URL` and `ACCOUNT_SESSION_SECRET`. Published posts are shown on the storefront; drafts are admin-only. For local development with serverless API routes, use the Vercel CLI (`vercel dev`) and set the same environment variables locally.
 
 Copy `.env.example` to `.env` for local settings, fill in `DATABASE_URL` and the Cloudinary credentials, and use your existing admin credentials. Never commit `.env`; it is ignored by Git.

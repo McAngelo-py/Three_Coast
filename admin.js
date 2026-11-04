@@ -273,7 +273,10 @@ function renderProducts() {
     row.appendChild(productCell);
 
     appendText(row, 'td', '', productCategoryLabel(product.category)).dataset.label = 'Category';
-    appendText(row, 'td', '', '$' + Number(product.price).toFixed(2)).dataset.label = 'Price';
+    appendText(row, 'td', '', new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP'
+    }).format(Number(product.price))).dataset.label = 'Price';
 
     var stockCell = document.createElement('td');
     stockCell.dataset.label = 'Stock';
